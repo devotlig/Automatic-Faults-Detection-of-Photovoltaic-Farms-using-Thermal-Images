@@ -74,7 +74,7 @@ with gr.Blocks() as iface:
                 # Submit Button and Outputs
                 gr.Markdown("### Detection Output")
                 with gr.Row():
-                    saved_images = gr.File(label='Saved Images')
+                    saved_images = gr.Gallery(label='Saved Images')
                     saved_text_files = gr.File(label='Saved Text Files')
 
             with gr.Column():

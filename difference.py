@@ -164,7 +164,6 @@ def run(
                 cv2.imshow(str(p), im0)
                 cv2.waitKey(0)  # 1 millisecond
                 cv2.destroyAllWindows()
-
             
             if len(det):
                 # Rescale boxes from img_size to im0 size
@@ -184,7 +183,6 @@ def run(
                         if len(det_fault):
                             annotator = Annotator(im0, line_width=line_thickness, example=str(names_fault))
                             det_fault[:, :4] = scale_coords(im.shape[2:], det_fault[:, :4], im0.shape).round()
-
 
             # Save results (image with detections)
             if save_img:

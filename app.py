@@ -48,7 +48,7 @@ main_iface = gr.Interface(
         gr.Checkbox(value=False, label='Use OpenCV DNN for ONNX Inference', info='Use OpenCV DNN for ONNX inference'),
     ],
     outputs=[
-        gr.File(label='Saved Images'),
+        gr.Gallery(label='Saved Images'),
         gr.File(label='Saved Text Files'),
     ],
     title="YOLOv5 Image Detection Interface",

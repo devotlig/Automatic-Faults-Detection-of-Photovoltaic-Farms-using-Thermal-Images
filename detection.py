@@ -157,7 +157,7 @@ def run(
                     # print(x1.ndim)
                     pred_full_solar_modules.append([float(x1), float(y1), float(x2), float(y2)])
                     prob_full_solar_modules.append(prob)
-                    
+
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
@@ -239,7 +239,6 @@ def run(
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
-
         pred = model_single(im, augment=augment, visualize=visualize)
         t3 = time_sync()
         dt[1] += t3 - t2
@@ -305,52 +304,47 @@ def run(
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
-            
             pred_single_solar_modules.sort()
             pred_full_solar_modules.sort()
             im0 = annotator.result()
             for im in range(len(pred_full_solar_modules)):
                 img = cv2.imread(path)
-                temp , temp2  = img , img
-                for j in range(1000):
-                    cv2.imshow("output", np.array(temp, dtype = np.uint8 ))
+                temp, temp2  = img, img
+                cv2.imshow("output", np.array(temp, dtype=np.uint8))
+                cv2.waitKey(1000)  # Wait for 1 second
                 # adding filled rectangle on each frame
                 print(path,(int(pred_full_solar_modules[im][0]),int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]),int(pred_full_solar_modules[im][3])))
                 cv2.rectangle(temp, (int(pred_full_solar_modules[im][0]),int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]),int(pred_full_solar_modules[im][3])),(0, 255, 0), 5)
-                for k in range(10000):
-                    cv2.imshow("output", temp)
-                
+                cv2.imshow("output", temp)
+                cv2.waitKey(1000)  # Wait for 1 second
+
                 for m in range(len(pred_single_solar_modules)):
                     mid_point_x,mid_point_y = (pred_single_solar_modules[m][0]+pred_single_solar_modules[m][2])/2 , (pred_single_solar_modules[m][1]+pred_single_solar_modules[m][3])/2
                     if((mid_point_x > pred_full_solar_modules[im][0]) and (mid_point_x < pred_full_solar_modules[im][2]) and mid_point_y > pred_full_solar_modules[im][1] and mid_point_y < pred_full_solar_modules[im][3]):
                         cv2.rectangle(temp,  (int(pred_single_solar_modules[m][0]),int(pred_single_solar_modules[m][1])), (int(pred_single_solar_modules[m][2]),int(pred_single_solar_modules[m][3])),( 255 , 0 , 0 ),2)
-                        for i in range(10000):
-                            cv2.imshow("output", temp)
+                        cv2.imshow("output", temp)
+                        cv2.waitKey(1000)  # Wait for 1 second
 
                         if cv2.waitKey(1) & 0xFF == ord('s'):
                             break
                 
                 for ml in range(len(pred_fault_solar_modules)):
-                    mid_point_fault_x,mid_point_fault_y = (pred_fault_solar_modules[ml][0]+pred_fault_solar_modules[ml][2])/2 , (pred_fault_solar_modules[ml][1]+pred_fault_solar_modules[ml][3])/2
-                    if((mid_point_fault_x > pred_full_solar_modules[im][0]) and (mid_point_fault_x < pred_full_solar_modules[im][2]) and mid_point_fault_y > pred_full_solar_modules[im][1] and mid_point_fault_y < pred_full_solar_modules[im][3]):
-                        cv2.rectangle(temp2, (int(pred_full_solar_modules[im][0]),int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]),int(pred_full_solar_modules[im][3])),(0, 0, 255), -1)
-                        cv2.rectangle(temp2, (int(pred_fault_solar_modules[ml][0]),int(pred_fault_solar_modules[ml][1])), (int(pred_fault_solar_modules[ml][2]),int(pred_fault_solar_modules[ml][3])),(255, 255, 0), 5)
-                        #cv2.putText(temp,str(prob_fault_solar_modules[ml]),(pred_fault_solar_modules[ml][0]-1,pred_fault_solar_modules[ml][1]-1),cv2.FONT_HERSHEY_COMPLEX, 1 , color=(255,0,0),thickness=1)
+                    mid_point_fault_x, mid_point_fault_y = (pred_fault_solar_modules[ml][0] + pred_fault_solar_modules[ml][2]) / 2 , (pred_fault_solar_modules[ml][1] + pred_fault_solar_modules[ml][3]) / 2
+                    if ((mid_point_fault_x > pred_full_solar_modules[im][0]) and (mid_point_fault_x < pred_full_solar_modules[im][2]) and mid_point_fault_y > pred_full_solar_modules[im][1] and mid_point_fault_y < pred_full_solar_modules[im][3]):
+                        cv2.rectangle(temp2, (int(pred_full_solar_modules[im][0]), int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]), int(pred_full_solar_modules[im][3])), (0, 0, 255), -1)
+                        cv2.rectangle(temp2, (int(pred_fault_solar_modules[ml][0]),int(pred_fault_solar_modules[ml][1])), (int(pred_fault_solar_modules[ml][2]), int(pred_fault_solar_modules[ml][3])), (255, 255, 0), 5)
+                        #cv2.putText(temp, str(prob_fault_solar_modules[ml]), (pred_fault_solar_modules[ml][0] - 1, pred_fault_solar_modules[ml][1] - 1), cv2.FONT_HERSHEY_COMPLEX, 1 , color=(255, 0, 0), thickness=1)
                         font = cv2.FONT_HERSHEY_SIMPLEX
-                        org = (int(pred_fault_solar_modules[ml][0])-30,int(pred_fault_solar_modules[ml][1])-1)
+                        org = (int(pred_fault_solar_modules[ml][0]) - 30, int(pred_fault_solar_modules[ml][1]) - 1)
                         fontScale = 1
                         color = (255, 0, 0)
                         thickness = 2
-                        cv2.putText(temp2, str((int(prob_fault_solar_modules[ml]*10000))/100) + "%", org, font, fontScale, color, thickness, cv2.LINE_AA)
-                        for k in range(10000):
-                            cv2.imshow("output", temp2)
-                            
+                        cv2.putText(temp2, str((int(prob_fault_solar_modules[ml] * 10000)) / 100) + "%", org, font, fontScale, color, thickness, cv2.LINE_AA)
+                        cv2.imshow("output", temp2)
+                        cv2.waitKey(1000)  # Wait for 1 second
+
                 if cv2.waitKey(1) & 0xFF == ord('s'):
                     break
-
-                
-            
-                # cv2.destroyAllWindows()
 
             # Save results (image with detections)
             if save_img:
@@ -373,6 +367,8 @@ def run(
 
         # Print time (inference-only)
         LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
+
+    cv2.destroyAllWindows()
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
@@ -436,6 +432,7 @@ def main(opt):
     check_requirements(exclude=('tensorboard', 'thop'))
     run(**vars(opt))
 
+
 def run_detection(
         weights, 
         source, 
@@ -497,6 +494,7 @@ def run_detection(
         half=half, 
         dnn=dnn
     )
+
 
 if __name__ == "__main__":
     opt = parse_opt()
