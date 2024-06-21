@@ -28,7 +28,23 @@ from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import copy_attr, time_sync
 
 
-def autopad(k, p=None):  # kernel, padding
+def autopad(k, p=None):
+    """
+    Automatically calculates the padding size for a given kernel size.
+
+    Parameters:
+    k (int or tuple): The size of the kernel. If an integer is provided, it is assumed to be a square kernel.
+                      If a tuple is provided, it should contain the dimensions of the kernel (height, width).
+
+    p (int or tuple, optional): The desired padding size. If not provided, the padding size is calculated as half
+                                of the kernel size.
+
+    Returns:
+    int or tuple: The calculated padding size. If a single integer is provided as the kernel size, the padding size
+                  will be a single integer. If a tuple is provided as the kernel size, the padding size will be a
+                  tuple of the same dimensions.
+
+    """
     # Pad to 'same'
     if p is None:
         p = k // 2 if isinstance(k, int) else (x // 2 for x in k)  # auto-pad
@@ -91,7 +107,23 @@ class DWConv(Conv):
 
 
 class TransformerLayer(nn.Module):
-    # Transformer layer https://arxiv.org/abs/2010.11929 (LayerNorm layers removed for better performance)
+    """
+    TransformerLayer class represents a single layer of the Transformer model.
+    Refer to: https://arxiv.org/abs/2010.11929 (LayerNorm layers removed for better performance)
+
+    Args:
+        c (int): The input and output channel size.
+        num_heads (int): The number of attention heads.
+
+    Attributes:
+        q (nn.Linear): Linear layer for query projection.
+        k (nn.Linear): Linear layer for key projection.
+        v (nn.Linear): Linear layer for value projection.
+        ma (nn.MultiheadAttention): Multi-head attention module.
+        fc1 (nn.Linear): Linear layer for the first feed-forward network.
+        fc2 (nn.Linear): Linear layer for the second feed-forward network.
+    """
+
     def __init__(self, c, num_heads):
         super().__init__()
         self.q = nn.Linear(c, c, bias=False)
@@ -108,7 +140,25 @@ class TransformerLayer(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    # Vision Transformer https://arxiv.org/abs/2010.11929
+    """
+    TransformerBlock is a module that implements a single block of the Vision Transformer.
+    Refer to: https://arxiv.org/abs/2010.11929
+    It consists of a convolutional layer (optional), a linear layer for position embedding, and multiple Transformer layers.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        num_heads (int): Number of attention heads in the Transformer layers.
+        num_layers (int): Number of Transformer layers.
+
+    Attributes:
+        conv (nn.Module): Convolutional layer for channel dimension adjustment (optional).
+        linear (nn.Linear): Linear layer for position embedding.
+        tr (nn.Sequential): Sequential container for multiple Transformer layers.
+        c2 (int): Number of output channels.
+
+    """
+
     def __init__(self, c1, c2, num_heads, num_layers):
         super().__init__()
         self.conv = None
@@ -127,7 +177,17 @@ class TransformerBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    # Standard bottleneck
+    """
+    Bottleneck block used in the network architecture.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        shortcut (bool, optional): Whether to use shortcut connection. Defaults to True.
+        g (int, optional): Number of groups for grouped convolution. Defaults to 1.
+        e (float, optional): Expansion factor for hidden channels. Defaults to 0.5.
+    """
+
     def __init__(self, c1, c2, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
@@ -140,7 +200,32 @@ class Bottleneck(nn.Module):
 
 
 class BottleneckCSP(nn.Module):
-    # CSP Bottleneck https://github.com/WongKinYiu/CrossStagePartialNetworks
+    """
+    BottleneckCSP module.
+    Refer to: https://github.com/WongKinYiu/CrossStagePartialNetworks
+
+    This module implements the BottleneckCSP block, which is a component of the Cross Stage Partial Networks (CSPNet).
+    It consists of a series of convolutional layers and residual connections.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        n (int): Number of Bottleneck blocks to stack.
+        shortcut (bool): Whether to include shortcut connections.
+        g (int): Number of groups for grouped convolutions.
+        e (float): Expansion factor for hidden channels.
+
+    Attributes:
+        cv1 (Conv): 1x1 convolutional layer.
+        cv2 (nn.Conv2d): 1x1 convolutional layer.
+        cv3 (nn.Conv2d): 1x1 convolutional layer.
+        cv4 (Conv): 1x1 convolutional layer.
+        bn (nn.BatchNorm2d): Batch normalization layer.
+        act (nn.SiLU): Activation function.
+        m (nn.Sequential): Sequential container for Bottleneck blocks.
+
+    """
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
@@ -159,7 +244,25 @@ class BottleneckCSP(nn.Module):
 
 
 class C3(nn.Module):
-    # CSP Bottleneck with 3 convolutions
+    """
+    C3 module represents a CSP Bottleneck with 3 convolutions.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        n (int): Number of Bottleneck blocks to stack.
+        shortcut (bool): Whether to use shortcut connections.
+        g (int): Number of groups for grouped convolutions.
+        e (float): Expansion factor for hidden channels.
+
+    Attributes:
+        cv1 (nn.Module): Convolution layer 1.
+        cv2 (nn.Module): Convolution layer 2.
+        cv3 (nn.Module): Convolution layer 3.
+        m (nn.Sequential): Sequential module containing Bottleneck blocks.
+
+    """
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
@@ -174,7 +277,18 @@ class C3(nn.Module):
 
 
 class C3TR(C3):
-    # C3 module with TransformerBlock()
+    """
+    C3TR class extends the C3 module with TransformerBlock.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        n (int, optional): Number of repeated blocks. Defaults to 1.
+        shortcut (bool, optional): Whether to use shortcut connections. Defaults to True.
+        g (int, optional): Number of groups for grouped convolution. Defaults to 1.
+        e (float, optional): Expansion factor for channel reduction. Defaults to 0.5.
+    """
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)
@@ -182,7 +296,22 @@ class C3TR(C3):
 
 
 class C3SPP(C3):
-    # C3 module with SPP()
+    """
+    C3SPP class represents a C3 module with SPP (Spatial Pyramid Pooling).
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (tuple): Tuple of kernel sizes for the SPP module. Default is (5, 9, 13).
+        n (int): Number of repeated C3 blocks. Default is 1.
+        shortcut (bool): Whether to use shortcut connections. Default is True.
+        g (int): Number of groups for grouped convolution. Default is 1.
+        e (float): Expansion factor for the number of output channels. Default is 0.5.
+
+    Attributes:
+        m (SPP): SPP module.
+
+    """
     def __init__(self, c1, c2, k=(5, 9, 13), n=1, shortcut=True, g=1, e=0.5):
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)
@@ -190,7 +319,18 @@ class C3SPP(C3):
 
 
 class C3Ghost(C3):
-    # C3 module with GhostBottleneck()
+    """
+    C3Ghost class represents a C3 module with GhostBottleneck.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        n (int, optional): Number of GhostBottleneck blocks to stack. Defaults to 1.
+        shortcut (bool, optional): Whether to use shortcut connections. Defaults to True.
+        g (int, optional): Number of groups for grouped convolution. Defaults to 1.
+        e (float, optional): Expansion factor for hidden channels. Defaults to 0.5.
+    """
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)  # hidden channels
@@ -198,7 +338,27 @@ class C3Ghost(C3):
 
 
 class SPP(nn.Module):
-    # Spatial Pyramid Pooling (SPP) layer https://arxiv.org/abs/1406.4729
+    """
+    Spatial Pyramid Pooling (SPP) layer.
+    Refer to: https://arxiv.org/abs/1406.4729
+
+    This layer implements the Spatial Pyramid Pooling technique described in the paper:
+    "Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition" by He et al. (2014).
+    The SPP layer takes an input tensor and performs max pooling operations at multiple scales.
+    The output of the SPP layer is a concatenated tensor of the max pooled features.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (tuple): Tuple of kernel sizes for max pooling operations.
+
+    Attributes:
+        cv1 (Conv): Convolutional layer to reduce the number of input channels.
+        cv2 (Conv): Convolutional layer to map the concatenated features to the desired number of output channels.
+        m (ModuleList): List of MaxPool2d modules for performing max pooling operations.
+
+    """
+
     def __init__(self, c1, c2, k=(5, 9, 13)):
         super().__init__()
         c_ = c1 // 2  # hidden channels
@@ -214,7 +374,21 @@ class SPP(nn.Module):
 
 
 class SPPF(nn.Module):
-    # Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher
+    """
+    Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (int): Kernel size for max pooling. Default is 5.
+
+    Attributes:
+        cv1 (Conv): Convolutional layer 1.
+        cv2 (Conv): Convolutional layer 2.
+        m (MaxPool2d): Max pooling layer.
+
+    """
+
     def __init__(self, c1, c2, k=5):  # equivalent to SPP(k=(5, 9, 13))
         super().__init__()
         c_ = c1 // 2  # hidden channels
@@ -928,7 +1102,23 @@ class Detections:
 
 
 class Classify(nn.Module):
-    # Classification head, i.e. x(b,c1,20,20) to x(b,c2)
+    """
+    Classify module for classification head.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (int, optional): Kernel size. Defaults to 1.
+        s (int, optional): Stride size. Defaults to 1.
+        p (int, optional): Padding size. Defaults to None.
+        g (int, optional): Number of groups. Defaults to 1.
+
+    Attributes:
+        aap (nn.AdaptiveAvgPool2d): Adaptive average pooling layer.
+        conv (nn.Conv2d): Convolutional layer.
+        flat (nn.Flatten): Flatten layer.
+    """
+
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1):  # ch_in, ch_out, kernel, stride, padding, groups
         super().__init__()
         self.aap = nn.AdaptiveAvgPool2d(1)  # to x(b,c1,1,1)
