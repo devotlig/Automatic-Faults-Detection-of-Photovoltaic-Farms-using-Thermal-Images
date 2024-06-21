@@ -5,6 +5,8 @@ from pathlib import Path
 from detection import run_detection
 from train import run_training
 from val import run_validation
+from difference import run_diff_detection
+from export import run_export
 
 
 FILE = Path(__file__).resolve()
@@ -129,9 +131,82 @@ val_iface = gr.Interface(
     description="Configure parameters to validate the YOLOv5 model."
 )
 
+diff_iface = gr.Interface(
+    fn=run_diff_detection,
+    inputs=[
+        gr.Textbox(value=os.path.join(ROOT, 'best-solar.pt'), label='Weights', placeholder='Enter model paths separated by space', info='model path(s)'),
+        gr.Textbox(label='Source', value=os.path.join(ROOT, 'test_folder'), info='file/dir/URL/glob, 0 for webcam', placeholder='Enter source path'),
+        gr.Textbox(label='Data', value=os.path.join(ROOT, 'data.yaml'), info='(optional) dataset.yaml path', placeholder='Enter dataset.yaml path'),
+        gr.Number(label='Image Height', value=640, info='Inference image size height'),
+        gr.Number(label='Image Width', value=640, info='Inference image size width'),
+        gr.Slider(minimum=0, maximum=1, step=0.01, value=0.25, label='Confidence Threshold', info='Confidence threshold (0-1)'),
+        gr.Slider(minimum=0, maximum=1, step=0.01, value=0.45, label='NMS IOU Threshold', info='NMS IOU threshold (0-1)'),
+        gr.Slider(minimum=1, maximum=1000, step=1, value=1000, label='Max Detections per Image', info='Maximum detections per image'),
+        gr.Radio(choices=['cpu', '0', '1', '2', '3'], label='Device', value='cpu', info='cuda device, i.e. 0 or 0,1,2,3 or cpu'),
+        gr.Checkbox(value=False, label='View Image', info='Show results'),
+        gr.Checkbox(value=False, label='Save Text', info='Save results to *.txt'),
+        gr.Checkbox(value=False, label='Save Confidence', info='Save confidences in --save-txt labels'),
+        gr.Checkbox(value=False, label='Save Crop', info='Save cropped prediction boxes'),
+        gr.Checkbox(value=False, label='No Save', info='Do not save images/videos'),
+        gr.Textbox(value=None, label='Classes', placeholder='Enter class numbers separated by space, example: 0 1 2', info='Filter by classes'),
+        gr.Checkbox(value=False, label='Class-agnostic NMS', info='Class-agnostic NMS'),
+        gr.Checkbox(value=False, label='Augment', info='Augmented inference'),
+        gr.Checkbox(value=False, label='Visualize', info='Visualize features'),
+        gr.Checkbox(value=False, label='Update', info='Update all models'),
+        gr.Textbox(value=os.path.join(ROOT, 'detect_results'), label='Project', info='Save results to project/name', placeholder='Enter project directory'),
+        gr.Textbox(value='exp', label='Name', info='Save results to project/name', placeholder='Enter experiment name'),
+        gr.Checkbox(value=False, label='Exist OK', info='Existing project/name ok, do not increment'),
+        gr.Slider(minimum=1, maximum=10, step=1, value=3, label='Line Thickness', info='Bounding box thickness (pixels)'),
+        gr.Checkbox(value=False, label='Hide Labels', info='Hide labels on images'),
+        gr.Checkbox(value=False, label='Hide Confidence', info='Hide confidence on images'),
+        gr.Checkbox(value=False, label='Use FP16 Half-Precision Inference', info='Use FP16 half-precision inference'),
+        gr.Checkbox(value=False, label='Use OpenCV DNN for ONNX Inference', info='Use OpenCV DNN for ONNX inference'),
+    ],
+    outputs=[
+        gr.Text(label="Detection Message"),  # To display textual information
+        gr.File(label="Download Output")    # To allow file downloads
+    ],
+    title="Run Detection",
+    description="Configure parameters to run the diff detection model."
+)
+
+export_iface = gr.Interface(
+    fn=run_export,
+    inputs=[
+        gr.Textbox(label="Data YAML Path", value=os.path.join(ROOT, 'data/coco128.yaml'), info='dataset.yaml path', placeholder='Enter dataset.yaml path'),
+        gr.Textbox(label="Weights Paths", value=os.path.join(ROOT, 'yolov5s.pt'), info='model.pt path(s)', placeholder='Enter model paths separated by space'),
+        gr.Number(label="Image Height", value=640, info='Inference image size height'),
+        gr.Number(label="Image Width", value=640, info='Inference image size width'),
+        gr.Number(label="Batch Size", value=1, info='Batch size for export'),
+        gr.Radio(choices=['cpu', '0', '1', '2', '3'], label="Device", value='cpu', info='cuda device, i.e. 0 or 0, 1, 2, 3 or cpu'),
+        gr.Checkbox(label="Use FP16 Half-Precision", value=False, info='FP16 half-precision export'),
+        gr.Checkbox(label="Set YOLOv5 Detect() Inplace=True", value=False, info='set YOLOv5 Detect() inplace=True'),
+        gr.Checkbox(label="Model Train Mode", value=False, info='model.train() mode'),
+        gr.Checkbox(label="Optimize for Mobile", value=False, info='TorchScript: optimize for mobile'),
+        gr.Checkbox(label="INT8 Quantization", value=False, info='CoreML/TF INT8 quantization'),
+        gr.Checkbox(label="Dynamic Axes for ONNX/TF", value=False, info='ONNX/TF: dynamic axes'),
+        gr.Checkbox(label="Simplify ONNX Model", value=False, info='ONNX: simplify model'),
+        gr.Number(label="ONNX Opset Version", value=12, info='ONNX: opset version'),
+        gr.Checkbox(label="Verbose Logging for TensorRT", value=False, info='TensorRT: verbose log'),
+        gr.Number(label="Workspace Size (GB) for TensorRT", value=4, info='TensorRT: workspace size (GB)'),
+        gr.Checkbox(label="Add NMS to TensorFlow Model", value=False, info='TF: add NMS to model'),
+        gr.Checkbox(label="Add Class-agnostic NMS to TensorFlow Model", value=False, info='TF: add agnostic NMS to model'),
+        gr.Number(label="TopK Per Class for TensorFlow.js NMS", value=100, info='TF.js NMS: topk per class to keep'),
+        gr.Number(label="TopK All for TensorFlow.js NMS", value=100, info='TF.js NMS: topk for all classes to keep'),
+        gr.Slider(label="IoU Threshold for TensorFlow.js NMS", minimum=0, maximum=1, step=0.01, value=0.45, info='TF.js NMS: IoU threshold'),
+        gr.Slider(label="Confidence Threshold for TensorFlow.js NMS", minimum=0, maximum=1, step=0.01, value=0.25, info='TF.js NMS: confidence threshold'),
+        gr.CheckboxGroup(label="Include Formats", choices=['torchscript', 'onnx', 'openvino', 'engine', 'coreml', 'saved_model', 'pb', 'tflite', 'edgetpu', 'tfjs'], 
+                         value=['torchscript', 'onnx'],
+                         info='Select from: torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs')
+    ],
+    outputs="text",
+    title="Model Export Interface",
+    description="Set export parameters for running models with various optimizations and export formats."
+)
+
 iface = gr.TabbedInterface(
-    [main_iface, train_iface, val_iface],
-    ["Image Detection", "Image Training", "Image Validation"],
+    [main_iface, train_iface, val_iface, diff_iface, export_iface],
+    ["Image Detection", "Image Training", "Image Validation", "Image Diff Detection", "Model Export"],
     title="Automatic-Faults-Detection-of-Photovoltaic-Farms-using-Thermal-Images",  # Title of the interface
 )
 

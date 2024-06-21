@@ -99,6 +99,14 @@
 </p>
 This temperature variation when taken as an RGB 3-dim arrayed image matrix through a thermal camera mounted on the UAV is used as the feeding data for training of our YOLO model. </p>
 
+## How to Run the Code
+
+1. Clone the repository to your local machine.
+2. Open the command prompt or terminal with your specific Python environment and type **pip install requirement.txt**.
+3. Now place the test thermal image to the `test_folder` folder.
+4. Run the `app.py` file with your python interpretor.
+5. View the results on the browser at `http://127.0.0.1:7860`
+
 ## MODEL AND ALGORITHM
 
 ### **<ins>YOLOv5</ins>**

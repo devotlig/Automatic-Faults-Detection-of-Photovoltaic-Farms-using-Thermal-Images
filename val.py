@@ -27,6 +27,18 @@ from utils.torch_utils import select_device, time_sync
 
 
 def save_one_txt(predn, save_conf, shape, file):
+    """
+    Save the predicted results in a txt file.
+
+    Args:
+        predn (list): List of predicted bounding boxes and their corresponding class labels, confidence scores.
+        save_conf (bool): Flag indicating whether to save confidence scores along with the labels.
+        shape (list): List containing the shape of the image.
+        file (str): Path to the output txt file.
+
+    Returns:
+        None
+    """
     # Save one txt result
     gn = torch.tensor(shape)[[1, 0, 1, 0]]  # normalization gain whwh
     for *xyxy, conf, cls in predn.tolist():
@@ -37,7 +49,19 @@ def save_one_txt(predn, save_conf, shape, file):
 
 
 def save_one_json(predn, jdict, path, class_map):
-    # Save one JSON result {"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}
+    """
+    Save the prediction results in JSON format for a single image.
+    Example: {"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}
+
+    Args:
+        predn (numpy.ndarray): The prediction results for the image.
+        jdict (list): The list to which the JSON result will be appended.
+        path (Path): The path of the image file.
+        class_map (dict): A dictionary mapping class indices to category IDs.
+
+    Returns:
+        None
+    """
     image_id = int(path.stem) if path.stem.isnumeric() else path.stem
     box = xyxy2xywh(predn[:, :4])  # xywh
     box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner

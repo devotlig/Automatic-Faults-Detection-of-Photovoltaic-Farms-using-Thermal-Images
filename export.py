@@ -28,7 +28,16 @@ from utils.torch_utils import select_device
 
 
 def export_formats():
-    # YOLOv5 export formats
+    """
+    Returns a DataFrame containing information about different export formats for YOLOv5 models.
+
+    Returns:
+        pd.DataFrame: A DataFrame with columns ['Format', 'Argument', 'Suffix', 'GPU'].
+            - 'Format': The name of the export format.
+            - 'Argument': The argument to be passed when exporting the model.
+            - 'Suffix': The file suffix for the exported model.
+            - 'GPU': Indicates whether the export format supports GPU acceleration (True/False).
+    """
     x = [
         ['PyTorch', '-', '.pt', True],
         ['TorchScript', 'torchscript', '.torchscript', True],
@@ -40,12 +49,28 @@ def export_formats():
         ['TensorFlow GraphDef', 'pb', '.pb', True],
         ['TensorFlow Lite', 'tflite', '.tflite', False],
         ['TensorFlow Edge TPU', 'edgetpu', '_edgetpu.tflite', False],
-        ['TensorFlow.js', 'tfjs', '_web_model', False],]
+        ['TensorFlow.js', 'tfjs', '_web_model', False],
+    ]
     return pd.DataFrame(x, columns=['Format', 'Argument', 'Suffix', 'GPU'])
 
 
 def export_torchscript(model, im, file, optimize, prefix=colorstr('TorchScript:')):
-    # YOLOv5 TorchScript model export
+    """
+    Export the YOLOv5 TorchScript model.
+
+    Args:
+        model (torch.nn.Module): The YOLOv5 model to be exported.
+        im (torch.Tensor): The input image tensor.
+        file (Path): The file path to save the exported TorchScript model.
+        optimize (bool): Whether to optimize the exported model for mobile interpreter.
+        prefix (str): The prefix string for logging.
+
+    Returns:
+        Path: The file path where the exported TorchScript model is saved.
+
+    Raises:
+        Exception: If there is an error during the export process.
+    """
     try:
         LOGGER.info(f'\n{prefix} starting export with torch {torch.__version__}...')
         f = file.with_suffix('.torchscript')
@@ -65,7 +90,25 @@ def export_torchscript(model, im, file, optimize, prefix=colorstr('TorchScript:'
 
 
 def export_onnx(model, im, file, opset, train, dynamic, simplify, prefix=colorstr('ONNX:')):
-    # YOLOv5 ONNX export
+    """
+    Export the model to ONNX format.
+
+    Args:
+        model (torch.nn.Module): The PyTorch model to export.
+        im (torch.Tensor): The input image tensor.
+        file (Path): The file path to save the exported ONNX model.
+        opset (int): The ONNX opset version.
+        train (bool): Whether to export the model in training mode or evaluation mode.
+        dynamic (bool): Whether to use dynamic axes for the exported ONNX model.
+        simplify (bool): Whether to simplify the exported ONNX model using onnx-simplifier.
+        prefix (str): The prefix string for logging messages.
+
+    Returns:
+        Path: The file path of the exported ONNX model.
+
+    Raises:
+        Exception: If there is an error during the export process.
+    """
     try:
         check_requirements(('onnx',))
         import onnx
@@ -125,7 +168,21 @@ def export_onnx(model, im, file, opset, train, dynamic, simplify, prefix=colorst
 
 
 def export_openvino(model, im, file, prefix=colorstr('OpenVINO:')):
-    # YOLOv5 OpenVINO export
+    """
+    Export the YOLOv5 model to OpenVINO format.
+
+    Args:
+        model: The YOLOv5 model.
+        im: The input image.
+        file: The file to save the exported model.
+        prefix: The prefix to use for logging messages (default: 'OpenVINO:').
+
+    Returns:
+        The path to the exported model.
+
+    Raises:
+        Exception: If the export fails.
+    """
     try:
         check_requirements(('openvino-dev',))  # requires openvino-dev: https://pypi.org/project/openvino-dev/
         import openvino.inference_engine as ie
@@ -143,7 +200,21 @@ def export_openvino(model, im, file, prefix=colorstr('OpenVINO:')):
 
 
 def export_coreml(model, im, file, int8, half, prefix=colorstr('CoreML:')):
-    # YOLOv5 CoreML export
+    """
+    Export the given model to CoreML format using coremltools.
+
+    Args:
+        model: The model to be exported.
+        im: The input image.
+        file: The file path to save the exported CoreML model.
+        int8: Flag indicating whether to use 8-bit quantization.
+        half: Flag indicating whether to use 16-bit quantization.
+        prefix: The prefix string for logging messages.
+
+    Returns:
+        ct_model: The exported CoreML model.
+        f: The file path where the CoreML model is saved.
+    """
     try:
         check_requirements(('coremltools',))
         import coremltools as ct
@@ -171,7 +242,30 @@ def export_coreml(model, im, file, int8, half, prefix=colorstr('CoreML:')):
 
 
 def export_engine(model, im, file, train, half, simplify, workspace=4, verbose=False, prefix=colorstr('TensorRT:')):
-    # YOLOv5 TensorRT export https://developer.nvidia.com/tensorrt
+    """
+    Export the model to a TensorRT engine file.
+    Refer to: https://developer.nvidia.com/tensorrt
+
+    Args:
+        model: The model to be exported.
+        im: The input image.
+        file: The output file path for the exported engine file.
+        train: Whether the model is trained or not.
+        half: Whether to use half-precision floating-point format.
+        simplify: Whether to simplify the model.
+        workspace: The maximum workspace size for TensorRT.
+        verbose: Whether to enable verbose logging.
+        prefix: The prefix for log messages.
+
+    Returns:
+        The path to the exported TensorRT engine file.
+
+    Raises:
+        AssertionError: If the export is running on CPU instead of GPU.
+        AssertionError: If the ONNX file fails to export.
+        RuntimeError: If the ONNX file fails to load.
+        Exception: If there is an export failure.
+    """
     try:
         import tensorrt as trt  # pip install -U nvidia-tensorrt --index-url https://pypi.ngc.nvidia.com
 
@@ -235,7 +329,26 @@ def export_saved_model(model,
                        conf_thres=0.25,
                        keras=False,
                        prefix=colorstr('TensorFlow SavedModel:')):
-    # YOLOv5 TensorFlow SavedModel export
+    """
+    Export the YOLOv5 model as a TensorFlow SavedModel.
+
+    Args:
+        model (Model): YOLOv5 model.
+        im (Tensor): Input image tensor.
+        file (str): File path to save the exported model.
+        dynamic (bool): Whether the model is dynamic or not.
+        tf_nms (bool, optional): Whether to use TensorFlow NMS. Defaults to False.
+        agnostic_nms (bool, optional): Whether to use agnostic NMS. Defaults to False.
+        topk_per_class (int, optional): Number of top detections per class. Defaults to 100.
+        topk_all (int, optional): Number of top detections across all classes. Defaults to 100.
+        iou_thres (float, optional): IoU threshold for NMS. Defaults to 0.45.
+        conf_thres (float, optional): Confidence threshold for NMS. Defaults to 0.25.
+        keras (bool, optional): Whether to save the model in Keras format. Defaults to False.
+        prefix (str, optional): Prefix for log messages. Defaults to 'TensorFlow SavedModel:'.
+
+    Returns:
+        Tuple[Model, str]: Tuple containing the exported Keras model and the file path where it is saved.
+    """
     try:
         import tensorflow as tf
         from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
@@ -276,7 +389,22 @@ def export_saved_model(model,
 
 
 def export_pb(keras_model, im, file, prefix=colorstr('TensorFlow GraphDef:')):
-    # YOLOv5 TensorFlow GraphDef *.pb export https://github.com/leimao/Frozen_Graph_TensorFlow
+    """
+    Export the Keras model as a TensorFlow GraphDef protobuf file.
+    Refer to: https://github.com/leimao/Frozen_Graph_TensorFlow
+
+    Args:
+        keras_model (tf.keras.Model): The Keras model to be exported.
+        im: The input image.
+        file (str): The file path where the exported model will be saved.
+        prefix (str): The prefix for log messages.
+
+    Returns:
+        str: The file path of the exported model.
+
+    Raises:
+        Exception: If there is an error during the export process.
+    """
     try:
         import tensorflow as tf
         from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
@@ -297,7 +425,25 @@ def export_pb(keras_model, im, file, prefix=colorstr('TensorFlow GraphDef:')):
 
 
 def export_tflite(keras_model, im, file, int8, data, nms, agnostic_nms, prefix=colorstr('TensorFlow Lite:')):
-    # YOLOv5 TensorFlow Lite export
+    """
+    Export a Keras model to TensorFlow Lite format.
+
+    Args:
+        keras_model (tf.keras.Model): The Keras model to be exported.
+        im (numpy.ndarray): The input image.
+        file (str): The file path to save the exported TensorFlow Lite model.
+        int8 (bool): Whether to use INT8 quantization.
+        data (str): The path to the dataset.
+        nms (bool): Whether to enable non-maximum suppression.
+        agnostic_nms (bool): Whether to enable agnostic non-maximum suppression.
+        prefix (str): The prefix for log messages.
+
+    Returns:
+        str: The file path of the exported TensorFlow Lite model.
+
+    Raises:
+        Exception: If there is an error during the export process.
+    """
     try:
         import tensorflow as tf
 
@@ -331,7 +477,26 @@ def export_tflite(keras_model, im, file, int8, data, nms, agnostic_nms, prefix=c
 
 
 def export_edgetpu(keras_model, im, file, prefix=colorstr('Edge TPU:')):
-    # YOLOv5 Edge TPU export https://coral.ai/docs/edgetpu/models-intro/
+    """
+    Export the Keras model to Edge TPU format using the Edge TPU compiler.
+
+    Args:
+        keras_model: The Keras model to be exported.
+        im: The input image.
+        file: The file path to save the exported model.
+        prefix: The prefix for log messages (default: 'Edge TPU:').
+
+    Returns:
+        The file path of the exported Edge TPU model.
+
+    Raises:
+        AssertionError: If the export is not supported on the current platform.
+        Exception: If the export fails.
+
+    Note:
+        This function requires the Edge TPU compiler to be installed on a Linux system.
+        For more information on the Edge TPU compiler, see: https://coral.ai/docs/edgetpu/compiler/
+    """
     try:
         cmd = 'edgetpu_compiler --version'
         help_url = 'https://coral.ai/docs/edgetpu/compiler/'
@@ -360,7 +525,21 @@ def export_edgetpu(keras_model, im, file, prefix=colorstr('Edge TPU:')):
 
 
 def export_tfjs(keras_model, im, file, prefix=colorstr('TensorFlow.js:')):
-    # YOLOv5 TensorFlow.js export
+    """
+    Export the Keras model to TensorFlow.js format.
+
+    Args:
+        keras_model (object): The Keras model to be exported.
+        im (object): The input image.
+        file (str): The file path to save the exported model.
+        prefix (str, optional): The prefix for log messages. Defaults to colorstr('TensorFlow.js:').
+
+    Returns:
+        str: The path to the exported TensorFlow.js model.
+
+    Raises:
+        Exception: If there is an error during the export process.
+    """
     try:
         check_requirements(('tensorflowjs',))
         import re
@@ -420,6 +599,9 @@ def run(
         iou_thres=0.45,  # TF.js NMS: IoU threshold
         conf_thres=0.25,  # TF.js NMS: confidence threshold
 ):
+    if isinstance(weights, str):
+        weights = weights.split()
+
     t = time.time()
     include = [x.lower() for x in include]  # to lowercase
     formats = tuple(export_formats()['Argument'][1:])  # --include arguments
@@ -544,6 +726,61 @@ def parse_opt():
 def main(opt):
     for opt.weights in (opt.weights if isinstance(opt.weights, list) else [opt.weights]):
         run(**vars(opt))
+
+
+def run_export(
+        data, 
+        weights, 
+        height,  # Separated height
+        width,   # Separated width
+        batch_size, 
+        device, 
+        half, 
+        inplace, 
+        train, 
+        optimize, 
+        int8, 
+        dynamic, 
+        simplify, 
+        opset, 
+        verbose, 
+        workspace, 
+        nms, 
+        agnostic_nms, 
+        topk_per_class, 
+        topk_all, 
+        iou_thres, 
+        conf_thres, 
+        include
+    ):
+    # Combine height and width into a tuple as imgsz
+    imgsz = (int(height), int(width))
+
+    # Call the actual detection function
+    return run(
+        data=data, 
+        weights=weights, 
+        imgsz=imgsz, 
+        batch_size=batch_size, 
+        device=device, 
+        half=half, 
+        inplace=inplace, 
+        train=train, 
+        optimize=optimize, 
+        int8=int8, 
+        dynamic=dynamic, 
+        simplify=simplify, 
+        opset=opset, 
+        verbose=verbose, 
+        workspace=workspace, 
+        nms=nms, 
+        agnostic_nms=agnostic_nms, 
+        topk_per_class=topk_per_class, 
+        topk_all=topk_all, 
+        iou_thres=iou_thres, 
+        conf_thres=conf_thres, 
+        include=include
+    )
 
 
 if __name__ == "__main__":
