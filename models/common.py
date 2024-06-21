@@ -36,7 +36,30 @@ def autopad(k, p=None):  # kernel, padding
 
 
 class Conv(nn.Module):
-    # Standard convolution
+    """
+    Convolutional layer with optional batch normalization and activation function.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (int): Kernel size. Default is 1.
+        s (int): Stride size. Default is 1.
+        p (int or None): Padding size. Default is None.
+        g (int): Number of groups. Default is 1.
+        act (bool or nn.Module): Activation function. If True, uses SiLU activation function.
+            If False, no activation function is applied. If nn.Module, uses the provided activation function.
+            Default is True.
+
+    Attributes:
+        conv (nn.Conv2d): Convolutional layer.
+        bn (nn.BatchNorm2d): Batch normalization layer.
+        act (nn.Module): Activation function.
+
+    Methods:
+        forward(x): Forward pass of the convolutional layer with batch normalization and activation.
+        forward_fuse(x): Forward pass of the convolutional layer without batch normalization, but with activation.
+    """
+
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)
@@ -51,7 +74,18 @@ class Conv(nn.Module):
 
 
 class DWConv(Conv):
-    # Depth-wise convolution class
+    """Depth-wise convolution class.
+
+    This class represents a depth-wise convolution layer, which is a type of convolutional layer commonly used in
+    neural networks for efficient feature extraction. It inherits from the `Conv` class.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (int, optional): Kernel size. Defaults to 1.
+        s (int, optional): Stride size. Defaults to 1.
+        act (bool, optional): Whether to apply activation function. Defaults to True.
+    """
     def __init__(self, c1, c2, k=1, s=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
         super().__init__(c1, c2, k, s, g=math.gcd(c1, c2), act=act)
 
@@ -198,7 +232,23 @@ class SPPF(nn.Module):
 
 
 class Focus(nn.Module):
-    # Focus wh information into c-space
+    """
+    Focus module that performs spatial downsampling and channel transformation.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (int): Kernel size for convolutional layer.
+        s (int): Stride for convolutional layer.
+        p (int): Padding for convolutional layer.
+        g (int): Number of groups for convolutional layer.
+        act (bool): Whether to apply activation function after convolution.
+
+    Attributes:
+        conv (nn.Module): Convolutional layer for channel transformation.
+
+    """
+
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):  # ch_in, ch_out, kernel, stride, padding, groups
         super().__init__()
         self.conv = Conv(c1 * 4, c2, k, s, p, g, act)
@@ -210,7 +260,22 @@ class Focus(nn.Module):
 
 
 class GhostConv(nn.Module):
-    # Ghost Convolution https://github.com/huawei-noah/ghostnet
+    """
+    Ghost Convolution module.
+
+    This module implements the Ghost Convolution, as described in the paper:
+    "GhostNet: More Features from Cheap Operations" by Han et al.
+    Refer to: https://github.com/huawei-noah/ghostnet
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (int, optional): Kernel size. Default is 1.
+        s (int, optional): Stride. Default is 1.
+        g (int, optional): Number of groups. Default is 1.
+        act (bool, optional): Whether to apply activation function. Default is True.
+    """
+
     def __init__(self, c1, c2, k=1, s=1, g=1, act=True):  # ch_in, ch_out, kernel, stride, groups
         super().__init__()
         c_ = c2 // 2  # hidden channels
@@ -223,7 +288,22 @@ class GhostConv(nn.Module):
 
 
 class GhostBottleneck(nn.Module):
-    # Ghost Bottleneck https://github.com/huawei-noah/ghostnet
+    """
+    GhostBottleneck class represents a bottleneck block in the GhostNet architecture.
+    Refer to: https://github.com/huawei-noah/ghostnet
+    It consists of a series of convolutional layers with skip connections.
+
+    Args:
+        c1 (int): Number of input channels.
+        c2 (int): Number of output channels.
+        k (int, optional): Kernel size for the depthwise convolution. Defaults to 3.
+        s (int, optional): Stride for the depthwise convolution. Defaults to 1.
+
+    Attributes:
+        conv (nn.Sequential): Sequential module containing the convolutional layers.
+        shortcut (nn.Sequential): Sequential module representing the skip connection.
+    """
+
     def __init__(self, c1, c2, k=3, s=1):  # ch_in, ch_out, kernel, stride
         super().__init__()
         c_ = c2 // 2
@@ -239,7 +319,21 @@ class GhostBottleneck(nn.Module):
 
 
 class Contract(nn.Module):
-    # Contract width-height into channels, i.e. x(1,64,80,80) to x(1,256,40,40)
+    """
+    Contract module for downsampling the input tensor.
+
+    Args:
+        gain (int): The downsampling factor. Default is 2.
+
+    Returns:
+        torch.Tensor: The downsampled tensor.
+
+    Example:
+        >>> contract = Contract()
+        >>> x = torch.randn(1, 64, 80, 80)
+        >>> output = contract(x)
+    """
+
     def __init__(self, gain=2):
         super().__init__()
         self.gain = gain
@@ -253,7 +347,21 @@ class Contract(nn.Module):
 
 
 class Expand(nn.Module):
-    # Expand channels into width-height, i.e. x(1,64,80,80) to x(1,16,160,160)
+    """
+    Expand channels into width-height.
+
+    Args:
+        gain (int): The factor by which the width and height should be expanded.
+
+    Returns:
+        torch.Tensor: The expanded tensor.
+
+    Example:
+        >>> expand = Expand(gain=2)
+        >>> x = torch.randn(1, 64, 80, 80)
+        >>> output = expand(x)
+    """
+
     def __init__(self, gain=2):
         super().__init__()
         self.gain = gain
@@ -267,7 +375,22 @@ class Expand(nn.Module):
 
 
 class Concat(nn.Module):
-    # Concatenate a list of tensors along dimension
+    """
+    Concatenate a list of tensors along a specified dimension.
+
+    Args:
+        dimension (int, optional): The dimension along which to concatenate the tensors. Default is 1.
+
+    Returns:
+        torch.Tensor: The concatenated tensor.
+
+    Example:
+        >>> x = [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6])]
+        >>> concat = Concat(dimension=0)
+        >>> result = concat(x)
+        >>> print(result)
+        tensor([1, 2, 3, 4, 5, 6])
+    """
     def __init__(self, dimension=1):
         super().__init__()
         self.d = dimension
@@ -279,18 +402,30 @@ class Concat(nn.Module):
 class DetectMultiBackend(nn.Module):
     # YOLOv5 MultiBackend class for python inference on various backends
     def __init__(self, weights='yolov5s.pt', device=torch.device('cpu'), dnn=False, data=None, fp16=False):
-        # Usage:
-        #   PyTorch:              weights = *.pt
-        #   TorchScript:                    *.torchscript
-        #   ONNX Runtime:                   *.onnx
-        #   ONNX OpenCV DNN:                *.onnx with --dnn
-        #   OpenVINO:                       *.xml
-        #   CoreML:                         *.mlmodel
-        #   TensorRT:                       *.engine
-        #   TensorFlow SavedModel:          *_saved_model
-        #   TensorFlow GraphDef:            *.pb
-        #   TensorFlow Lite:                *.tflite
-        #   TensorFlow Edge TPU:            *_edgetpu.tflite
+        """
+        YOLOv5 MultiBackend class for python inference on various backends.
+
+        Args:
+            weights (str or list): Path to the model weights file or a list of paths for ensemble models.
+            device (torch.device): Device to load the model on (default: torch.device('cpu')).
+            dnn (bool): Flag indicating whether to use ONNX OpenCV DNN backend (default: False).
+            data (str): Path to the data.yaml file containing class names (optional).
+            fp16 (bool): Flag indicating whether to use FP16 precision (default: False).
+
+        Usage:
+            - PyTorch:              weights = '*.pt'
+            - TorchScript:          weights = '*.torchscript'
+            - ONNX Runtime:         weights = '*.onnx'
+            - ONNX OpenCV DNN:      weights = '*.onnx' with --dnn
+            - OpenVINO:             weights = '*.xml'
+            - CoreML:               weights = '*.mlmodel'
+            - TensorRT:             weights = '*.engine'
+            - TensorFlow SavedModel:weights = '*_saved_model'
+            - TensorFlow GraphDef:  weights = '*.pb'
+            - TensorFlow Lite:      weights = '*.tflite'
+            - TensorFlow Edge TPU:  weights = '*_edgetpu.tflite'
+        """
+
         from models.experimental import attempt_download, attempt_load  # scoped to avoid circular import
 
         super().__init__()
@@ -408,6 +543,18 @@ class DetectMultiBackend(nn.Module):
         self.__dict__.update(locals())  # assign all variables to self
 
     def forward(self, im, augment=False, visualize=False, val=False):
+        """
+        Forward pass through the model.
+
+        Args:
+            im (torch.Tensor): Input image tensor.
+            augment (bool, optional): Whether to apply augmentation during inference. Defaults to False.
+            visualize (bool, optional): Whether to visualize the inference results. Defaults to False.
+            val (bool, optional): Whether the forward pass is for validation. Defaults to False.
+
+        Returns:
+            torch.Tensor or tuple: Output tensor(s) from the model. If `val` is True, returns a tuple containing the output tensor and an empty list. Otherwise, returns the output tensor.
+        """
         # YOLOv5 MultiBackend inference
         b, ch, h, w = im.shape  # batch, channel, height, width
         if self.pt:  # PyTorch
@@ -470,7 +617,15 @@ class DetectMultiBackend(nn.Module):
         return (y, []) if val else y
 
     def warmup(self, imgsz=(1, 3, 640, 640)):
-        # Warmup model by running inference once
+        """
+        Warmup the model by running inference once.
+
+        Args:
+            imgsz (tuple): The size of the input image. Default is (1, 3, 640, 640).
+
+        Returns:
+            None
+        """
         if any((self.pt, self.jit, self.onnx, self.engine, self.saved_model, self.pb)):  # warmup types
             if self.device.type != 'cpu':  # only warmup GPU models
                 im = torch.zeros(*imgsz, dtype=torch.half if self.fp16 else torch.float, device=self.device)  # input
@@ -479,7 +634,17 @@ class DetectMultiBackend(nn.Module):
 
     @staticmethod
     def model_type(p='path/to/model.pt'):
-        # Return model type from model path, i.e. path='path/to/model.onnx' -> type=onnx
+        """
+        Returns the type of the model based on the model path.
+
+        Args:
+            p (str): Path to the model file. Defaults to 'path/to/model.pt'.
+
+        Returns:
+            tuple: A tuple containing boolean values indicating the type of the model.
+                    The order of the values in the tuple is as follows:
+                    (pt, jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs)
+        """
         from export import export_formats
         suffixes = list(export_formats().Suffix) + ['.xml']  # export suffixes
         check_suffix(p, suffixes)  # checks
@@ -501,6 +666,18 @@ class AutoShape(nn.Module):
     amp = False  # Automatic Mixed Precision (AMP) inference
 
     def __init__(self, model):
+        """
+        Initializes the AutoShape class.
+
+        Args:
+            model: The model object to be used for AutoShape.
+
+        Attributes:
+            dmb (bool): Indicates whether the model is an instance of DetectMultiBackend.
+            pt (bool): Indicates whether the model is a PyTorch model.
+            model: The model object used for AutoShape.
+
+        """
         super().__init__()
         LOGGER.info('Adding AutoShape... ')
         copy_attr(self, model, include=('yaml', 'nc', 'hyp', 'names', 'stride', 'abc'), exclude=())  # copy attributes
@@ -509,6 +686,16 @@ class AutoShape(nn.Module):
         self.model = model.eval()
 
     def _apply(self, fn):
+        """
+        Applies the given function `fn` to the model tensors that are not parameters or registered buffers.
+
+        Args:
+            fn (function): The function to apply to the tensors.
+
+        Returns:
+            self: The modified model object.
+
+        """
         # Apply to(), cpu(), cuda(), half() to model tensors that are not parameters or registered buffers
         self = super()._apply(fn)
         if self.pt:
@@ -521,6 +708,26 @@ class AutoShape(nn.Module):
 
     @torch.no_grad()
     def forward(self, imgs, size=640, augment=False, profile=False):
+        """
+        Forward pass of the model.
+
+        Args:
+            imgs (str, PosixPath, list, tuple, torch.Tensor): Input images for inference. Can be a single image or a list of images.
+            size (int): Size of the input images. Default is 640.
+            augment (bool): Whether to apply augmentation during inference. Default is False.
+            profile (bool): Whether to enable profiling during inference. Default is False.
+
+        Returns:
+            Detections: Object containing the inference results.
+
+        Note:
+            - The input images can be provided in various formats, including file paths, URIs, OpenCV images, PIL images, numpy arrays, or torch tensors.
+            - If the input images are torch tensors, the inference is performed directly on the tensors.
+            - If the input images are file paths or URIs, they are loaded and pre-processed before inference.
+            - The pre-processing includes resizing, padding, and converting the images to the appropriate format for the model.
+            - The inference results are post-processed to perform non-maximum suppression and scale the bounding box coordinates.
+
+        """
         # Inference from various sources. For height=640, width=1280, RGB images example inputs are:
         #   file:       imgs = 'data/images/zidane.jpg'  # str or PosixPath
         #   URI:             = 'https://ultralytics.com/images/zidane.jpg'
@@ -602,6 +809,22 @@ class Detections:
         self.s = shape  # inference BCHW shape
 
     def display(self, pprint=False, show=False, save=False, crop=False, render=False, labels=True, save_dir=Path('')):
+        """
+        Display the images with annotations.
+
+        Args:
+            pprint (bool): Whether to print the image information.
+            show (bool): Whether to display the images.
+            save (bool): Whether to save the images.
+            crop (bool): Whether to crop the images.
+            render (bool): Whether to render the images.
+            labels (bool): Whether to display labels on the images.
+            save_dir (Path): The directory to save the images.
+
+        Returns:
+            list: A list of dictionaries containing information about the cropped images.
+
+        """
         crops = []
         for i, (im, pred) in enumerate(zip(self.imgs, self.pred)):
             s = f'image {i + 1}/{len(self.pred)}: {im.shape[0]}x{im.shape[1]} '  # string
@@ -664,7 +887,16 @@ class Detections:
         return self.imgs
 
     def pandas(self):
-        # return detections as pandas DataFrames, i.e. print(results.pandas().xyxy[0])
+        """
+        Convert detections to pandas DataFrames.
+
+        Returns:
+            A copy of the current object with detections represented as pandas DataFrames.
+
+        Notes:
+            - The returned DataFrames have columns for 'xmin', 'ymin', 'xmax', 'ymax', 'confidence', 'class', and 'name' when using 'xyxy' or 'xyxyn' format.
+            - The returned DataFrames have columns for 'xcenter', 'ycenter', 'width', 'height', 'confidence', 'class', and 'name' when using 'xywh' or 'xywhn' format.
+        """
         new = copy(self)  # return copy
         ca = 'xmin', 'ymin', 'xmax', 'ymax', 'confidence', 'class', 'name'  # xyxy columns
         cb = 'xcenter', 'ycenter', 'width', 'height', 'confidence', 'class', 'name'  # xywh columns
@@ -674,7 +906,12 @@ class Detections:
         return new
 
     def tolist(self):
-        # return a list of Detections objects, i.e. 'for result in results.tolist():'
+        """
+        Convert the Detections object to a list of Detections objects.
+
+        Returns:
+            list: A list of Detections objects, where each object represents a single detection result.
+        """
         r = range(self.n)  # iterable
         x = [Detections([self.imgs[i]], [self.pred[i]], [self.files[i]], self.times, self.names, self.s) for i in r]
         # for d in x:
