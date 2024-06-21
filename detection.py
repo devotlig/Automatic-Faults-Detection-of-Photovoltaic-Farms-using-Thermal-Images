@@ -50,6 +50,12 @@ def run(
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
 ):
+    if isinstance(weights, str):
+        weights = weights.split()
+    if isinstance(classes, str):
+        classes = None if classes == '' else list(map(int, classes.split()))
+    #print(f"weights: {weights}, source: {source}, data: {data}, imgsz: {imgsz}, conf_thres: {conf_thres}, iou_thres: {iou_thres}, max_det: {max_det}, device: {device}, view_img: {view_img}, save_txt: {save_txt}, save_conf: {save_conf}, save_crop: {save_crop}, nosave: {nosave}, classes: {classes}, agnostic_nms: {agnostic_nms}, augment: {augment}, visualize: {visualize}, update: {update}, project: {project}, name: {name}, exist_ok: {exist_ok}, line_thickness: {line_thickness}, hide_labels: {hide_labels}, hide_conf: {hide_conf}, half: {half}, dnn: {dnn}")
+
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -377,6 +383,20 @@ def run(
     if update:
         strip_optimizer(weights)  # update model (to fix SourceChangeWarning)
 
+    saved_images = None
+    saved_txts = None
+
+    if save_img:
+        image_files = list(save_dir.glob('*.jpg'))  # replace with your image extension
+        if image_files:
+            saved_images = image_files
+
+    if save_txt:
+        txt_files = list(save_dir.glob('labels/*.txt'))
+        if txt_files:
+            saved_txts = txt_files
+
+    return saved_images, saved_txts
 
 def parse_opt():
     parser = argparse.ArgumentParser()
@@ -416,6 +436,67 @@ def main(opt):
     check_requirements(exclude=('tensorboard', 'thop'))
     run(**vars(opt))
 
+def run_detection(
+        weights, 
+        source, 
+        data, 
+        height,  # Separated height
+        width,   # Separated width
+        conf_thres, 
+        iou_thres, 
+        max_det, 
+        device, 
+        view_img, 
+        save_txt, 
+        save_conf, 
+        save_crop, 
+        nosave, 
+        classes, 
+        agnostic_nms, 
+        augment, 
+        visualize, 
+        update, 
+        project, 
+        name, 
+        exist_ok, 
+        line_thickness, 
+        hide_labels, 
+        hide_conf, 
+        half, 
+        dnn
+    ):
+    # Combine height and width into a tuple as imgsz
+    imgsz = (int(height), int(width))
+
+    # Call the actual detection function
+    return run(
+        weights=weights, 
+        source=source, 
+        data=data, 
+        imgsz=imgsz, 
+        conf_thres=conf_thres, 
+        iou_thres=iou_thres, 
+        max_det=max_det, 
+        device=device, 
+        view_img=view_img, 
+        save_txt=save_txt, 
+        save_conf=save_conf, 
+        save_crop=save_crop, 
+        nosave=nosave, 
+        classes=classes, 
+        agnostic_nms=agnostic_nms, 
+        augment=augment, 
+        visualize=visualize, 
+        update=update, 
+        project=project, 
+        name=name, 
+        exist_ok=exist_ok, 
+        line_thickness=line_thickness, 
+        hide_labels=hide_labels, 
+        hide_conf=hide_conf, 
+        half=half, 
+        dnn=dnn
+    )
 
 if __name__ == "__main__":
     opt = parse_opt()

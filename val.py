@@ -103,6 +103,9 @@ def run(
         callbacks=Callbacks(),
         compute_loss=None,
 ):
+    if isinstance(weights, str):
+        weights = weights.split()
+
     # Initialize/load model and set device
     training = model is not None
     if training:  # called by train.py
@@ -371,6 +374,15 @@ def main(opt):
                 np.savetxt(f, y, fmt='%10.4g')  # save
             os.system('zip -r study.zip study_*.txt')
             plot_val_study(x=x)  # plot
+
+
+def run_validation(**kwargs):
+    # Usage: import val; val.run(data='coco128.yaml', imgsz=320, weights='yolov5m.pt')
+    opt = parse_opt(True)
+    for k, v in kwargs.items():
+        setattr(opt, k, v)
+    main(opt)
+    return opt
 
 
 if __name__ == "__main__":
