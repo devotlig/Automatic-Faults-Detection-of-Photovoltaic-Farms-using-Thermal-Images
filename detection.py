@@ -172,10 +172,10 @@ def run(
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
             # Stream results
-            im0 = annotator.result()
+            im1 = annotator.result()
             if view_img:
-                cv2.imshow(str(p), im0)
-                cv2.waitKey(0)  # 1 millisecond
+                cv2.imshow(str(p), im1)
+                cv2.waitKey(0)  # Wait until a key is pressed or the window is closed
                 cv2.destroyAllWindows()
 
         pred = model_fault(im, augment=augment, visualize=visualize)
@@ -307,21 +307,24 @@ def run(
             pred_single_solar_modules.sort()
             pred_full_solar_modules.sort()
             im0 = annotator.result()
+
+            img_detection = cv2.imread(path).copy()
+
             for im in range(len(pred_full_solar_modules)):
                 img = cv2.imread(path)
-                temp, temp2  = img, img
+                temp, temp2 = img, img
                 cv2.imshow("output", np.array(temp, dtype=np.uint8))
                 cv2.waitKey(1000)  # Wait for 1 second
                 # adding filled rectangle on each frame
-                print(path,(int(pred_full_solar_modules[im][0]),int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]),int(pred_full_solar_modules[im][3])))
-                cv2.rectangle(temp, (int(pred_full_solar_modules[im][0]),int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]),int(pred_full_solar_modules[im][3])),(0, 255, 0), 5)
+                print(path, (int(pred_full_solar_modules[im][0]), int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]), int(pred_full_solar_modules[im][3])))
+                cv2.rectangle(temp, (int(pred_full_solar_modules[im][0]), int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]), int(pred_full_solar_modules[im][3])), (0, 255, 0), 5)
                 cv2.imshow("output", temp)
                 cv2.waitKey(1000)  # Wait for 1 second
 
                 for m in range(len(pred_single_solar_modules)):
-                    mid_point_x,mid_point_y = (pred_single_solar_modules[m][0]+pred_single_solar_modules[m][2])/2 , (pred_single_solar_modules[m][1]+pred_single_solar_modules[m][3])/2
-                    if((mid_point_x > pred_full_solar_modules[im][0]) and (mid_point_x < pred_full_solar_modules[im][2]) and mid_point_y > pred_full_solar_modules[im][1] and mid_point_y < pred_full_solar_modules[im][3]):
-                        cv2.rectangle(temp,  (int(pred_single_solar_modules[m][0]),int(pred_single_solar_modules[m][1])), (int(pred_single_solar_modules[m][2]),int(pred_single_solar_modules[m][3])),( 255 , 0 , 0 ),2)
+                    mid_point_x, mid_point_y = (pred_single_solar_modules[m][0] + pred_single_solar_modules[m][2]) / 2 , (pred_single_solar_modules[m][1] + pred_single_solar_modules[m][3]) / 2
+                    if ((mid_point_x > pred_full_solar_modules[im][0]) and (mid_point_x < pred_full_solar_modules[im][2]) and mid_point_y > pred_full_solar_modules[im][1] and mid_point_y < pred_full_solar_modules[im][3]):
+                        cv2.rectangle(temp, (int(pred_single_solar_modules[m][0]), int(pred_single_solar_modules[m][1])), (int(pred_single_solar_modules[m][2]), int(pred_single_solar_modules[m][3])), (255, 0, 0), 2)
                         cv2.imshow("output", temp)
                         cv2.waitKey(1000)  # Wait for 1 second
 
@@ -332,14 +335,18 @@ def run(
                     mid_point_fault_x, mid_point_fault_y = (pred_fault_solar_modules[ml][0] + pred_fault_solar_modules[ml][2]) / 2 , (pred_fault_solar_modules[ml][1] + pred_fault_solar_modules[ml][3]) / 2
                     if ((mid_point_fault_x > pred_full_solar_modules[im][0]) and (mid_point_fault_x < pred_full_solar_modules[im][2]) and mid_point_fault_y > pred_full_solar_modules[im][1] and mid_point_fault_y < pred_full_solar_modules[im][3]):
                         cv2.rectangle(temp2, (int(pred_full_solar_modules[im][0]), int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]), int(pred_full_solar_modules[im][3])), (0, 0, 255), -1)
-                        cv2.rectangle(temp2, (int(pred_fault_solar_modules[ml][0]),int(pred_fault_solar_modules[ml][1])), (int(pred_fault_solar_modules[ml][2]), int(pred_fault_solar_modules[ml][3])), (255, 255, 0), 5)
+                        cv2.rectangle(temp2, (int(pred_fault_solar_modules[ml][0]), int(pred_fault_solar_modules[ml][1])), (int(pred_fault_solar_modules[ml][2]), int(pred_fault_solar_modules[ml][3])), (255, 255, 0), 5)
                         #cv2.putText(temp, str(prob_fault_solar_modules[ml]), (pred_fault_solar_modules[ml][0] - 1, pred_fault_solar_modules[ml][1] - 1), cv2.FONT_HERSHEY_COMPLEX, 1 , color=(255, 0, 0), thickness=1)
+                        cv2.rectangle(img_detection, (int(pred_full_solar_modules[im][0]), int(pred_full_solar_modules[im][1])), (int(pred_full_solar_modules[im][2]), int(pred_full_solar_modules[im][3])), (0, 0, 255), -1)
+                        cv2.rectangle(img_detection, (int(pred_fault_solar_modules[ml][0]), int(pred_fault_solar_modules[ml][1])), (int(pred_fault_solar_modules[ml][2]), int(pred_fault_solar_modules[ml][3])), (255, 255, 0), 5)
+                        #cv2.putText(img_detection, str(prob_fault_solar_modules[ml]), (pred_fault_solar_modules[ml][0] - 1, pred_fault_solar_modules[ml][1] - 1), cv2.FONT_HERSHEY_COMPLEX, 1 , color=(255, 0, 0), thickness=1)
                         font = cv2.FONT_HERSHEY_SIMPLEX
                         org = (int(pred_fault_solar_modules[ml][0]) - 30, int(pred_fault_solar_modules[ml][1]) - 1)
                         fontScale = 1
                         color = (255, 0, 0)
                         thickness = 2
                         cv2.putText(temp2, str((int(prob_fault_solar_modules[ml] * 10000)) / 100) + "%", org, font, fontScale, color, thickness, cv2.LINE_AA)
+                        cv2.putText(img_detection, str((int(prob_fault_solar_modules[ml] * 10000)) / 100) + "%", org, font, fontScale, color, thickness, cv2.LINE_AA)
                         cv2.imshow("output", temp2)
                         cv2.waitKey(1000)  # Wait for 1 second
 
@@ -349,7 +356,14 @@ def run(
             # Save results (image with detections)
             if save_img:
                 if dataset.mode == 'image':
-                    cv2.imwrite(save_path, im0)
+                    # Extract the original image name
+                    base_name, ext = os.path.splitext(os.path.basename(path))
+                    # Save the image with panels detections
+                    cv2.imwrite(str(save_dir / f'{base_name}_panel_detection{ext}'), im1)
+                    # Save the image with panel blocks detections
+                    cv2.imwrite(str(save_dir / f'{base_name}_panel_block_detection{ext}'), im0)
+                    # Save the image with only anomaly detections
+                    cv2.imwrite(str(save_dir / f'{base_name}_anomaly_detection{ext}'), img_detection)
                 else:  # 'video' or 'stream'
                     if vid_path[i] != save_path:  # new video
                         vid_path[i] = save_path

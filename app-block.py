@@ -49,7 +49,7 @@ with gr.Blocks() as iface:
                 # Grouping visual and operational settings
                 gr.Markdown("### Visual and Operational Settings")
                 with gr.Row():
-                    view_image = gr.Checkbox(value=False, label='View Image', info='Show results')
+                    view_image = gr.Checkbox(value=False, label='View Image', info='Show results of the solar panels detected')
                     save_text = gr.Checkbox(value=False, label='Save Text', info='Save results to *.txt')
                     save_confidence = gr.Checkbox(value=False, label='Save Confidence', info='Save confidences in --save-txt labels')
                     save_crop = gr.Checkbox(value=False, label='Save Crop', info='Save cropped prediction boxes')
@@ -264,7 +264,7 @@ with gr.Blocks() as iface:
                 # Grouping visual and additional options
                 gr.Markdown("### Visual and Additional Options")
                 with gr.Row():
-                    view_image = gr.Checkbox(value=False, label='View Image', info='Show results')
+                    view_image = gr.Checkbox(value=False, label='View Image', info='Show results of the solar panels detected')
                     save_text = gr.Checkbox(value=False, label='Save Text', info='Save results to *.txt')
                     save_confidence = gr.Checkbox(value=False, label='Save Confidence', info='Save confidences in --save-txt labels')
                     save_crop = gr.Checkbox(value=False, label='Save Crop', info='Save cropped prediction boxes')

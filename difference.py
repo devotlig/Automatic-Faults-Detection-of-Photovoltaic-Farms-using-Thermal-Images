@@ -159,12 +159,12 @@ def run(
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
             # Stream results
-            im0 = annotator.result()
+            im1 = annotator.result()
             if view_img:
-                cv2.imshow(str(p), im0)
-                cv2.waitKey(0)  # 1 millisecond
+                cv2.imshow(str(p), im1)
+                cv2.waitKey(0)  # Wait until a key is pressed or the window is closed
                 cv2.destroyAllWindows()
-            
+
             if len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
@@ -187,7 +187,12 @@ def run(
             # Save results (image with detections)
             if save_img:
                 if dataset.mode == 'image':
-                    cv2.imwrite(save_path, im0)
+                    # Extract the original image name
+                    base_name, ext = os.path.splitext(os.path.basename(path))
+                    # Save the image with panels detections
+                    cv2.imwrite(str(save_dir / f'{base_name}_panel_detection{ext}'), im1)
+                    # Save the image with panel blocks detections
+                    cv2.imwrite(str(save_dir / f'{base_name}_panel_block_detection{ext}'), im0)
                 else:  # 'video' or 'stream'
                     if vid_path[i] != save_path:  # new video
                         vid_path[i] = save_path
