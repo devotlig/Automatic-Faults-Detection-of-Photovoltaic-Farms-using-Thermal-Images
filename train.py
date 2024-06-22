@@ -643,13 +643,38 @@ def main(opt, callbacks=Callbacks()):
                     f'Usage example: $ python train.py --hyp {evolve_yaml}')
 
 
-def run_training(**kwargs):
+def run_training(*args):
+    """
+    Run the training process using the provided arguments.
+
+    Args:
+        *args: Variable number of arguments representing the training parameters.
+
+    Returns:
+        The result of the training process.
+
+    Raises:
+        Any exceptions that occur during the training process.
+
+    """
     # Usage: import train; train.run(data='coco128.yaml', imgsz=320, weights='yolov5m.pt')
+    keys = [
+        "weights", "cfg", "data", "hyp", "epochs", "batch_size", "imgsz", "rect", 
+        "resume", "nosave", "noval", "noautoanchor", "evolve", "bucket", "cache", "image_weights", 
+        "device", "multi_scale", "single_cls", "optimizer", "sync_bn", "workers", "project", 
+        "name", "exist_ok", "quad", "cos_lr", "label_smoothing", "patience", "freeze", "save_period",
+        "local_rank", "entity", "upload_dataset", "bbox_interval", "artifact_alias"
+    ]
+    kwargs = dict(zip(keys, args))
+
+    # Parse options and update with kwargs
     opt = parse_opt(True)
     for k, v in kwargs.items():
         setattr(opt, k, v)
+
+    # Call the main training function
     main(opt)
-    return opt
+    return "Training finished"
 
 
 if __name__ == "__main__":

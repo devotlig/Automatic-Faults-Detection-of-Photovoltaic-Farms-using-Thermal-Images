@@ -96,7 +96,9 @@ train_iface = gr.Interface(
         gr.Number(label='BBox Interval', value=-1, info='W&B: Set bounding-box image logging interval'),
         gr.Textbox(label='Artifact Alias', value='latest', info='W&B: Version of dataset artifact to use', placeholder='Enter W&B artifact alias'),
     ],
-    outputs="text",
+    outputs=[
+        gr.Textbox(label='Training Message', placeholder='Training message will be displayed here', info='Training message'),
+    ],
     title="YOLOv5 Model Training Interface",
     description="Configure parameters to train the YOLOv5 model."
 )
@@ -126,7 +128,9 @@ val_iface = gr.Interface(
         gr.Checkbox(label="Use FP16 Half-Precision", value=False, info='Use FP16 half-precision inference'),
         gr.Checkbox(label="Use DNN", value=False, info='Use OpenCV DNN for ONNX inference')
     ],
-    outputs="text",
+    outputs=[
+        gr.Textbox(label='Validation Message', placeholder='Validation message will be displayed here', info='Validation message'),
+    ],
     title="YOLOv5 Validation Interface",
     description="Configure parameters to validate the YOLOv5 model."
 )
@@ -163,8 +167,8 @@ diff_iface = gr.Interface(
         gr.Checkbox(value=False, label='Use OpenCV DNN for ONNX Inference', info='Use OpenCV DNN for ONNX inference'),
     ],
     outputs=[
-        gr.Text(label="Detection Message"),  # To display textual information
-        gr.File(label="Download Output")    # To allow file downloads
+        gr.Gallery(label="Saved Images"),
+        gr.File(label="Saved Text Files"),
     ],
     title="Run Detection",
     description="Configure parameters to run the diff detection model."
@@ -199,7 +203,9 @@ export_iface = gr.Interface(
                          value=['torchscript', 'onnx'],
                          info='Select from: torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs')
     ],
-    outputs="text",
+    outputs=[
+        gr.Files(label='Exported Files'),
+    ],
     title="Model Export Interface",
     description="Set export parameters for running models with various optimizations and export formats."
 )

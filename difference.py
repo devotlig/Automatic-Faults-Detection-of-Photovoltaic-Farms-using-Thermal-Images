@@ -215,6 +215,21 @@ def run(
     if update:
         strip_optimizer(weights)  # update model (to fix SourceChangeWarning)
 
+    saved_images = None
+    saved_txts = None
+
+    if save_img:
+        print(save_dir)
+        image_files = list(save_dir.glob('*.jpg')) + list(save_dir.glob('*.png'))
+        if image_files:
+            saved_images = image_files
+
+    if save_txt:
+        txt_files = list(save_dir.glob('labels/*.txt'))
+        if txt_files:
+            saved_txts = txt_files
+
+    return saved_images, saved_txts
 
 def parse_opt():
     parser = argparse.ArgumentParser()
@@ -255,67 +270,41 @@ def main(opt):
     run(**vars(opt))
 
 
-def run_diff_detection(
-        weights, 
-        source, 
-        data, 
-        height,  # Separated height
-        width,   # Separated width
-        conf_thres, 
-        iou_thres, 
-        max_det, 
-        device, 
-        view_img, 
-        save_txt, 
-        save_conf, 
-        save_crop, 
-        nosave, 
-        classes, 
-        agnostic_nms, 
-        augment, 
-        visualize, 
-        update, 
-        project, 
-        name, 
-        exist_ok, 
-        line_thickness, 
-        hide_labels, 
-        hide_conf, 
-        half, 
-        dnn
-    ):
+def run_diff_detection(*args):
+    """
+    Run the difference detection algorithm on thermal images.
+
+    Args:
+        *args: Variable number of arguments representing the detection parameters.
+
+    Returns:
+        The result of the detection function.
+
+    Raises:
+        Any exceptions that occur during the detection process.
+
+    """
+    keys = [
+        "weights", "source", "data", "img_height", "img_width", "conf_thres", "iou_thres", 
+        "max_det", "device", "view_img", "save_txt", "save_conf", "save_crop", 
+        "nosave", "classes", "agnostic_nms", "augment", "visualize", "update", 
+        "project", "name", "exist_ok", "line_thickness", "hide_labels", "hide_conf", 
+        "half", "dnn"
+    ]
+    kwargs = dict(zip(keys, args))
+
     # Combine height and width into a tuple as imgsz
-    imgsz = (int(height), int(width))
+    imgsz = (int(kwargs['img_height']), int(kwargs['img_width']))
+
+    # Update the imgsz in kwargs
+    kwargs['imgsz'] = imgsz
+
+    # Remove the height and width from kwargs
+    del kwargs['img_height']
+    del kwargs['img_width']
 
     # Call the actual detection function
-    return run(
-        weights=weights, 
-        source=source, 
-        data=data, 
-        imgsz=imgsz, 
-        conf_thres=conf_thres, 
-        iou_thres=iou_thres, 
-        max_det=max_det, 
-        device=device, 
-        view_img=view_img, 
-        save_txt=save_txt, 
-        save_conf=save_conf, 
-        save_crop=save_crop, 
-        nosave=nosave, 
-        classes=classes, 
-        agnostic_nms=agnostic_nms, 
-        augment=augment, 
-        visualize=visualize, 
-        update=update, 
-        project=project, 
-        name=name, 
-        exist_ok=exist_ok, 
-        line_thickness=line_thickness, 
-        hide_labels=hide_labels, 
-        hide_conf=hide_conf, 
-        half=half, 
-        dnn=dnn
-    )
+    return run(**kwargs)
 
 
 if __name__ == "__main__":

@@ -400,13 +400,37 @@ def main(opt):
             plot_val_study(x=x)  # plot
 
 
-def run_validation(**kwargs):
+def run_validation(*args):
+    """
+    Run the validation process using the provided arguments.
+
+    Args:
+        *args: Variable number of arguments representing the validation parameters.
+
+    Returns:
+        The result of the validation process.
+
+    Raises:
+        Any exceptions that occur during the validation process.
+
+    """
     # Usage: import val; val.run(data='coco128.yaml', imgsz=320, weights='yolov5m.pt')
+    keys = [
+        "data", "weights", "batch_size", "imgsz", "conf_thres", "iou_thres", 
+        "task", "device", "workers", "single_cls", "augment", "verbose", 
+        "save_txt", "save_hybrid", "save_conf", "save_json", "project", 
+        "name", "exist_ok", "half", "dnn"
+    ]
+    kwargs = dict(zip(keys, args))
+
+    # Parse options and update with kwargs
     opt = parse_opt(True)
     for k, v in kwargs.items():
         setattr(opt, k, v)
+
+    # Call the main validation function
     main(opt)
-    return opt
+    return "Validation finished"
 
 
 if __name__ == "__main__":

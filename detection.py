@@ -16,7 +16,7 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 from models.common import DetectMultiBackend
 from utils.datasets import IMG_FORMATS, VID_FORMATS, LoadImages, LoadStreams
 from utils.general import (LOGGER, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
-                           increment_path, non_max_suppression, print_args, scale_coords, strip_optimizer, xyxy2xywh)
+                           increment_path, non_max_suppression, print_args, scale_coords, strip_optimizer, xyxy2xywh, apply_classifier)
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
 
@@ -246,7 +246,7 @@ def run(
         pred = model_single(im, augment=augment, visualize=visualize)
         t3 = time_sync()
         dt[1] += t3 - t2
-        
+
         # NMS
         pred = non_max_suppression(pred, 0.01, 0.01, None, False, max_det=max_det)
         dt[2] += time_sync() - t3
@@ -383,7 +383,7 @@ def run(
     saved_txts = None
 
     if save_img:
-        image_files = list(save_dir.glob('*.jpg'))  # replace with your image extension
+        image_files = list(save_dir.glob('*.jpg')) + list(save_dir.glob('*.png'))
         if image_files:
             saved_images = image_files
 
@@ -433,67 +433,41 @@ def main(opt):
     run(**vars(opt))
 
 
-def run_detection(
-        weights, 
-        source, 
-        data, 
-        height,  # Separated height
-        width,   # Separated width
-        conf_thres, 
-        iou_thres, 
-        max_det, 
-        device, 
-        view_img, 
-        save_txt, 
-        save_conf, 
-        save_crop, 
-        nosave, 
-        classes, 
-        agnostic_nms, 
-        augment, 
-        visualize, 
-        update, 
-        project, 
-        name, 
-        exist_ok, 
-        line_thickness, 
-        hide_labels, 
-        hide_conf, 
-        half, 
-        dnn
-    ):
+def run_detection(*args):
+    """
+    Run the detection process using the provided arguments.
+
+    Args:
+        *args: Variable number of arguments representing the detection parameters.
+
+    Returns:
+        The result of the detection process.
+
+    Raises:
+        Any exceptions that occur during the detection process.
+
+    """
+    keys = [
+        "weights", "source", "data", "img_height", "img_width", "conf_thres", "iou_thres", 
+        "max_det", "device", "view_img", "save_txt", "save_conf", "save_crop", 
+        "nosave", "classes", "agnostic_nms", "augment", "visualize", "update", 
+        "project", "name", "exist_ok", "line_thickness", "hide_labels", "hide_conf", 
+        "half", "dnn", "enable_second_stage_classifier"
+    ]
+    kwargs = dict(zip(keys, args))
+
     # Combine height and width into a tuple as imgsz
-    imgsz = (int(height), int(width))
+    imgsz = (int(kwargs['img_height']), int(kwargs['img_width']))
+
+    # Update the imgsz in kwargs
+    kwargs['imgsz'] = imgsz
+
+    # Remove the height and width from kwargs
+    del kwargs['img_height']
+    del kwargs['img_width']
 
     # Call the actual detection function
-    return run(
-        weights=weights, 
-        source=source, 
-        data=data, 
-        imgsz=imgsz, 
-        conf_thres=conf_thres, 
-        iou_thres=iou_thres, 
-        max_det=max_det, 
-        device=device, 
-        view_img=view_img, 
-        save_txt=save_txt, 
-        save_conf=save_conf, 
-        save_crop=save_crop, 
-        nosave=nosave, 
-        classes=classes, 
-        agnostic_nms=agnostic_nms, 
-        augment=augment, 
-        visualize=visualize, 
-        update=update, 
-        project=project, 
-        name=name, 
-        exist_ok=exist_ok, 
-        line_thickness=line_thickness, 
-        hide_labels=hide_labels, 
-        hide_conf=hide_conf, 
-        half=half, 
-        dnn=dnn
-    )
+    return run(**kwargs)
 
 
 if __name__ == "__main__":

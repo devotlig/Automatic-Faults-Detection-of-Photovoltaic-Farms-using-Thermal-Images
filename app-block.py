@@ -71,7 +71,7 @@ with gr.Blocks() as iface:
                     use_opencv = gr.Checkbox(value=False, label='Use OpenCV DNN for ONNX Inference', info='Use OpenCV DNN for ONNX inference')
 
             with gr.Column():
-                # Submit Button and Outputs
+                # Images and Text Files Outputs
                 gr.Markdown("### Detection Output")
                 with gr.Row():
                     saved_images = gr.Gallery(label='Saved Images')
@@ -82,9 +82,11 @@ with gr.Blocks() as iface:
                 submit_button_detection = gr.Button("Run Detection")
                 submit_button_detection.click(
                     run_detection,
-                    inputs=[weights, source, data, image_height, image_width, confidence_threshold, nms_iou_threshold, max_detections, device, view_image, save_text,
-                            save_confidence, save_crop, no_save, classes, class_agnostic_nms, augment, visualize, update, project, name, exist_ok, line_thickness,
-                            hide_labels, hide_confidence, use_fp16, use_opencv],
+                    inputs=[
+                        weights, source, data, image_height, image_width, confidence_threshold, nms_iou_threshold, max_detections, device, view_image, save_text,
+                        save_confidence, save_crop, no_save, classes, class_agnostic_nms, augment, visualize, update, project, name, exist_ok, line_thickness,
+                        hide_labels, hide_confidence, use_fp16, use_opencv
+                    ],
                     outputs=[saved_images, saved_text_files]
                 )
 
@@ -153,10 +155,10 @@ with gr.Blocks() as iface:
                     local_rank = gr.Number(label='Local Rank', value=-1, info='DDP parameter, do not modify')
 
             with gr.Column():
-                # Outputs
+                # Text Outputs
                 gr.Markdown("### Training Output")
                 with gr.Row():
-                    training_output = gr.Textbox()
+                    training_output = gr.Textbox(label='Training Message', placeholder='Training message will be displayed here', info='Training message')
 
             with gr.Column():
                 # Submit Button
@@ -216,10 +218,10 @@ with gr.Blocks() as iface:
                     use_dnn = gr.Checkbox(label="Use DNN", value=False, info='Use OpenCV DNN for ONNX inference')
 
             with gr.Column():
-                # Define output component
+                # Text Outputs
                 gr.Markdown("### Validation Output")
                 with gr.Row():
-                    validation_output = gr.Textbox()
+                    validation_output = gr.Textbox(label='Validation Message', placeholder='Validation message will be displayed here', info='Validation message')
 
             with gr.Column():
                 # Submit Button
@@ -284,21 +286,25 @@ with gr.Blocks() as iface:
                     use_opencv = gr.Checkbox(value=False, label='Use OpenCV DNN for ONNX Inference', info='Use OpenCV DNN for ONNX inference')
 
             with gr.Column():
-                # Define output components
+                # Images and Text Files Outputs
                 gr.Markdown("### Diff Detection Output")
                 with gr.Row():
-                    detection_message = gr.Text(label="Detection Message")
-                    download_output = gr.File(label="Download Output")
+                    saved_images = gr.Gallery(label='Saved Images')
+                    saved_text_files = gr.Files(label='Saved Text Files')
 
             with gr.Column():
                 # Submit Button
                 submit_button_diff_detection = gr.Button("Run Diff Detection")
                 submit_button_diff_detection.click(
                     run_diff_detection,
-                    inputs=[weights, source, data, image_height, image_width, confidence_threshold, nms_iou_threshold, max_detections, device, view_image, save_text,
-                            save_confidence, save_crop, no_save, classes, class_agnostic_nms, augment, visualize, update, project, name, exist_ok, line_thickness,
-                            hide_labels, hide_confidence, use_fp16, use_opencv],
-                    outputs=[detection_message, download_output]
+                    inputs=[
+                        weights, source, data, image_height, image_width, confidence_threshold, nms_iou_threshold, 
+                        max_detections, device, view_image, save_text, save_confidence, save_crop, 
+                        no_save, classes, class_agnostic_nms, augment, visualize, update, 
+                        project, name, exist_ok, line_thickness, hide_labels, hide_confidence, 
+                        use_fp16, use_opencv
+                    ],
+                    outputs=[saved_images, saved_text_files]
                 )
 
         with gr.Tab("Model Export"):
@@ -344,24 +350,28 @@ with gr.Blocks() as iface:
                 # Grouping format selection
                 gr.Markdown("### Format Selection")
                 with gr.Row():
-                    include_formats = gr.CheckboxGroup(label="Include Formats", choices=['torchscript', 'onnx', 'openvino', 'engine', 'coreml', 'saved_model', 'pb', 'tflite', 'edgetpu', 'tfjs'], 
-                                                      value=['torchscript', 'onnx'],
-                                                      info='Select from: torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs')
+                    include_formats = gr.CheckboxGroup(
+                        label="Include Formats", choices=['torchscript', 'onnx', 'openvino', 'engine', 'coreml', 'saved_model', 'pb', 'tflite', 'edgetpu', 'tfjs'], 
+                        value=['torchscript', 'onnx'],
+                        info='Select from: torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs'
+                    )
 
             with gr.Column():
-                # Define output component
+                # Files Output
                 gr.Markdown("### Export Output")
                 with gr.Row():
-                    export_output = gr.Textbox()
+                    export_output = gr.Files(label='Exported Files')
 
             with gr.Column():
                 # Submit Button
                 submit_button_export = gr.Button("Run Export")
                 submit_button_export.click(
                     run_export,
-                    inputs=[data_yaml_path, weights_paths, image_height, image_width, batch_size, device, use_fp16, inplace, train_mode, optimize_mobile,
-                            int8_quantization, dynamic_axes, simplify_onnx, onnx_opset, verbose_log, workspace_size, add_nms, agnostic_nms, topk_per_class,
-                            topk_all, iou_threshold, confidence_threshold, include_formats],
+                    inputs=[
+                        data_yaml_path, weights_paths, image_height, image_width, batch_size, device, use_fp16, inplace, train_mode, optimize_mobile,
+                        int8_quantization, dynamic_axes, simplify_onnx, onnx_opset, verbose_log, workspace_size, add_nms, agnostic_nms, topk_per_class,
+                        topk_all, iou_threshold, confidence_threshold, include_formats
+                    ],
                     outputs=export_output
                 )
 

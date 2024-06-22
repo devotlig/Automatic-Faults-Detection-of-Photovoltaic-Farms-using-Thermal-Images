@@ -599,6 +599,36 @@ def run(
         iou_thres=0.45,  # TF.js NMS: IoU threshold
         conf_thres=0.25,  # TF.js NMS: confidence threshold
 ):
+    """
+    Run the export process for the YOLOv5 model.
+
+    Args:
+        data (str): Path to the dataset.yaml file.
+        weights (str): Path to the weights file.
+        imgsz (tuple): Image size (height, width).
+        batch_size (int): Batch size.
+        device (str): Cuda device, i.e. 0 or 0,1,2,3 or cpu.
+        include (tuple): Include formats.
+        half (bool): FP16 half-precision export.
+        inplace (bool): Set YOLOv5 Detect() inplace=True.
+        train (bool): Model.train() mode.
+        optimize (bool): TorchScript: optimize for mobile.
+        int8 (bool): CoreML/TF INT8 quantization.
+        dynamic (bool): ONNX/TF: dynamic axes.
+        simplify (bool): ONNX: simplify model.
+        opset (int): ONNX: opset version.
+        verbose (bool): TensorRT: verbose log.
+        workspace (int): TensorRT: workspace size (GB).
+        nms (bool): TF: add NMS to model.
+        agnostic_nms (bool): TF: add agnostic NMS to model.
+        topk_per_class (int): TF.js NMS: topk per class to keep.
+        topk_all (int): TF.js NMS: topk for all classes to keep.
+        iou_thres (float): TF.js NMS: IoU threshold.
+        conf_thres (float): TF.js NMS: confidence threshold.
+
+    Returns:
+        list: List of exported files/dirs.
+    """
     if isinstance(weights, str):
         weights = weights.split()
 
@@ -728,59 +758,40 @@ def main(opt):
         run(**vars(opt))
 
 
-def run_export(
-        data, 
-        weights, 
-        height,  # Separated height
-        width,   # Separated width
-        batch_size, 
-        device, 
-        half, 
-        inplace, 
-        train, 
-        optimize, 
-        int8, 
-        dynamic, 
-        simplify, 
-        opset, 
-        verbose, 
-        workspace, 
-        nms, 
-        agnostic_nms, 
-        topk_per_class, 
-        topk_all, 
-        iou_thres, 
-        conf_thres, 
-        include
-    ):
-    # Combine height and width into a tuple as imgsz
-    imgsz = (int(height), int(width))
+def run_export(*args):
+    """
+    Run the export process using the provided arguments.
 
-    # Call the actual detection function
-    return run(
-        data=data, 
-        weights=weights, 
-        imgsz=imgsz, 
-        batch_size=batch_size, 
-        device=device, 
-        half=half, 
-        inplace=inplace, 
-        train=train, 
-        optimize=optimize, 
-        int8=int8, 
-        dynamic=dynamic, 
-        simplify=simplify, 
-        opset=opset, 
-        verbose=verbose, 
-        workspace=workspace, 
-        nms=nms, 
-        agnostic_nms=agnostic_nms, 
-        topk_per_class=topk_per_class, 
-        topk_all=topk_all, 
-        iou_thres=iou_thres, 
-        conf_thres=conf_thres, 
-        include=include
-    )
+    Args:
+        *args: Variable number of arguments representing the export parameters.
+
+    Returns:
+        The result of the export process.
+
+    Raises:
+        Any exceptions that occur during the export process.
+
+    """
+    keys = [
+        "data", "weights", "img_height", "img_width", "batch_size", "device", 
+        "half", "inplace", "train", "optimize", "int8", "dynamic" 
+        "simplify", "opset", "verbose", "workspace", "nms", "agnostic_nms", 
+        "topk_per_class", "topk_all", "iou_thres", "conf_thres", "include"
+    ]
+    kwargs = dict(zip(keys, args))
+
+    # Combine height and width into a tuple as imgsz
+    imgsz = (int(kwargs['img_height']), int(kwargs['img_width']))
+
+    # Update the imgsz in kwargs
+    kwargs['imgsz'] = imgsz
+
+    # Remove the height and width from kwargs
+    del kwargs['img_height']
+    del kwargs['img_width']
+
+    # Call the actual export function
+    return run(**kwargs)
 
 
 if __name__ == "__main__":
