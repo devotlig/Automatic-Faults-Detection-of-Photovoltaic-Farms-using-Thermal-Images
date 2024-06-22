@@ -213,7 +213,8 @@ export_iface = gr.Interface(
 iface = gr.TabbedInterface(
     [main_iface, train_iface, val_iface, diff_iface, export_iface],
     ["Image Detection", "Image Training", "Image Validation", "Image Diff Detection", "Model Export"],
-    title="Automatic-Faults-Detection-of-Photovoltaic-Farms-using-Thermal-Images",  # Title of the interface
+    title="Automatic Faults Detection of Photovoltaic Farms using Thermal Images based on YoloV5",
+    description="Designed by Phill Weston, all rights reserved."
 )
 
 if __name__ == '__main__':

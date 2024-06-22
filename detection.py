@@ -50,6 +50,37 @@ def run(
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
 ):
+    """
+    Run the automatic faults detection on photovoltaic farms using thermal images.
+
+    Args:
+        weights (str or Path): Path to the model weights file(s).
+        source (str or Path): Path to the input file/directory/URL/glob or 0 for webcam.
+        data (str or Path): Path to the dataset YAML file.
+        imgsz (tuple): Inference size (height, width).
+        conf_thres (float): Confidence threshold.
+        iou_thres (float): NMS IOU threshold.
+        max_det (int): Maximum detections per image.
+        device (str): CUDA device, i.e. 0 or 0,1,2,3 or cpu.
+        view_img (bool): Whether to show the results.
+        save_txt (bool): Whether to save the results to *.txt files.
+        save_conf (bool): Whether to save confidences in --save-txt labels.
+        save_crop (bool): Whether to save cropped prediction boxes.
+        nosave (bool): Whether to save images/videos.
+        classes (list): List of classes to filter by.
+        agnostic_nms (bool): Whether to use class-agnostic NMS.
+        augment (bool): Whether to use augmented inference.
+        visualize (bool): Whether to visualize features.
+        update (bool): Whether to update all models.
+        project (str or Path): Path to save the results to project/name.
+        name (str): Name to save the results.
+        exist_ok (bool): Whether existing project/name is ok, do not increment.
+        line_thickness (int): Bounding box thickness (pixels).
+        hide_labels (bool): Whether to hide labels.
+        hide_conf (bool): Whether to hide confidences.
+        half (bool): Whether to use FP16 half-precision inference.
+        dnn (bool): Whether to use OpenCV DNN for ONNX inference.
+    """
     if isinstance(weights, str):
         weights = weights.split()
     if isinstance(classes, str):
@@ -76,11 +107,11 @@ def run(
 
     weights_fault = "best.pt"
     model_fault = DetectMultiBackend(weights_fault, device=device, dnn=dnn, data=data, fp16=half)
-    stride_fault, names_fault, pt_fault = model_fault.stride, model_fault.names, model_fault.pt
+    # stride_fault, names_fault, pt_fault = model_fault.stride, model_fault.names, model_fault.pt
 
     weights_single = "best-singlemodule.pt"
     model_single = DetectMultiBackend(weights_single, device=device, dnn=dnn, data=data, fp16=half)
-    stride_single, names_single, pt_single = model_single.stride, model_single.names, model_single.pt
+    # stride_single, names_single, pt_single = model_single.stride, model_single.names, model_single.pt
 
     # Dataloader
     if webcam:
@@ -466,7 +497,7 @@ def run_detection(*args):
         "max_det", "device", "view_img", "save_txt", "save_conf", "save_crop", 
         "nosave", "classes", "agnostic_nms", "augment", "visualize", "update", 
         "project", "name", "exist_ok", "line_thickness", "hide_labels", "hide_conf", 
-        "half", "dnn", "enable_second_stage_classifier"
+        "half", "dnn"
     ]
     kwargs = dict(zip(keys, args))
 

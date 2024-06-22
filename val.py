@@ -127,6 +127,41 @@ def run(
         callbacks=Callbacks(),
         compute_loss=None,
 ):
+    """
+    Run the validation process.
+
+    Args:
+        data (dict): Data configuration dictionary.
+        weights (str or List[str], optional): Path to the model.pt file(s). Defaults to None.
+        batch_size (int, optional): Batch size. Defaults to 32.
+        imgsz (int, optional): Inference size in pixels. Defaults to 640.
+        conf_thres (float, optional): Confidence threshold. Defaults to 0.001.
+        iou_thres (float, optional): NMS IoU threshold. Defaults to 0.6.
+        task (str, optional): Task type. Can be 'train', 'val', 'test', 'speed', or 'study'. Defaults to 'val'.
+        device (str, optional): Device to use for inference. Defaults to ''.
+        workers (int, optional): Maximum dataloader workers. Defaults to 8.
+        single_cls (bool, optional): Treat as single-class dataset. Defaults to False.
+        augment (bool, optional): Use augmented inference. Defaults to False.
+        verbose (bool, optional): Enable verbose output. Defaults to False.
+        save_txt (bool, optional): Save results to *.txt files. Defaults to False.
+        save_hybrid (bool, optional): Save label+prediction hybrid results to *.txt files. Defaults to False.
+        save_conf (bool, optional): Save confidences in --save-txt labels. Defaults to False.
+        save_json (bool, optional): Save a COCO-JSON results file. Defaults to False.
+        project (Path, optional): Path to save the results. Defaults to ROOT / 'runs/val'.
+        name (str, optional): Name of the project. Defaults to 'exp'.
+        exist_ok (bool, optional): Allow existing project/name. Defaults to False.
+        half (bool, optional): Use FP16 half-precision inference. Defaults to True.
+        dnn (bool, optional): Use OpenCV DNN for ONNX inference. Defaults to False.
+        model (Model, optional): Pre-initialized model. Defaults to None.
+        dataloader (DataLoader, optional): Pre-initialized dataloader. Defaults to None.
+        save_dir (Path, optional): Path to save the results. Defaults to Path('').
+        plots (bool, optional): Enable plotting. Defaults to True.
+        callbacks (Callbacks, optional): Callbacks object. Defaults to Callbacks().
+        compute_loss (Callable, optional): Custom loss function. Defaults to None.
+
+    Returns:
+        Tuple: Results of the validation process.
+    """
     if isinstance(weights, str):
         weights = weights.split()
 
@@ -370,6 +405,15 @@ def parse_opt():
 
 
 def main(opt):
+    """
+    Main function for running the validation script.
+
+    Args:
+        opt (argparse.Namespace): Command-line arguments and options.
+
+    Returns:
+        None
+    """
     check_requirements(requirements=ROOT / 'requirements.txt', exclude=('tensorboard', 'thop'))
 
     if opt.task in ('train', 'val', 'test'):  # run normally

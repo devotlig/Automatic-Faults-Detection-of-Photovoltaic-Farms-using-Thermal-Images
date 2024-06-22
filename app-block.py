@@ -17,7 +17,7 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 
 with gr.Blocks() as iface:
-    gr.Markdown("# YOLOv5 Interface")
+    gr.Markdown("# Automatic Faults Detection of Photovoltaic Farms using Thermal Images based on YOLOv5 \nDesigned by [Phill Weston](https://github.com/Phillweston), all rights reserved.")
     with gr.Tabs():
         with gr.Tab("Image Detection"):
             gr.Markdown("## Image Detection \nThis tab is dedicated to configuring and running image detection processes. Adjust the settings below to fit your specific needs.")

@@ -48,7 +48,19 @@ RANK = int(os.getenv('RANK', -1))
 WORLD_SIZE = int(os.getenv('WORLD_SIZE', 1))
 
 
-def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictionary
+def train(hyp, opt, device, callbacks):
+    """
+    Trains a model using the specified hyperparameters, options, device, and callbacks.
+
+    Args:
+        hyp (str or dict): Path to the hyp.yaml file or a dictionary containing hyperparameters.
+        opt (argparse.Namespace): Options for training.
+        device (torch.device): Device to use for training.
+        callbacks (CallbackHandler): Callback handler for training.
+
+    Returns:
+        Tuple: Results of the training process.
+    """
     save_dir, epochs, batch_size, weights, single_cls, evolve, data, cfg, resume, noval, nosave, workers, freeze = \
         Path(opt.save_dir), opt.epochs, opt.batch_size, opt.weights, opt.single_cls, opt.evolve, opt.data, opt.cfg, \
         opt.resume, opt.noval, opt.nosave, opt.workers, opt.freeze
@@ -508,6 +520,16 @@ def parse_opt(known=False):
 
 
 def main(opt, callbacks=Callbacks()):
+    """
+    Main function for training the model.
+
+    Args:
+        opt (argparse.Namespace): The command-line arguments.
+        callbacks (Callbacks, optional): The callbacks to be used during training. Defaults to Callbacks().
+
+    Returns:
+        None
+    """
     # Checks
     if RANK in (-1, 0):
         print_args(vars(opt))
