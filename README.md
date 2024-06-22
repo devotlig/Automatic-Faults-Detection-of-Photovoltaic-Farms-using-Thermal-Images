@@ -23,37 +23,29 @@
 
 ## Table of contents
 
-  <ol>
-    <li>
-       <a href="#abstract">Abstract</a>
-    </li>
-    <li>
-      <a href="#introduction">Introduction</a>
-    </li>
-    <li>
-     <a href="#model and algorithm"> Model and Algorithm</a>
-     <ul>
-        <li><a href="#yolov5">YOLOv5</a></li>
-        <li><a href="#dataset preparations">Data Preparations</a></li>
-        <li>
-         <a href="#predictions made">Predictions Made</a>
-          <ul>
-           <li><a href="#webots-simulator">PV array detection</a></li>
-           <li><a href="#important-note">Single PV module detection</a></li>
-           <li><a href="#webots-simulator">PV module with fault</a></li>
-         </ul>
-        </li>
-        <li><a href="#setup-requirements">Model Setup Requirements</a></li>
-        <li><a href="#initialisation">Initialisation</a></li>
-    </ul>
-   </li>
-    <li><a href="#scoring">Types of Faults</a></li>
-    <li><a href="#instructions-regarding-submissions">Results and Prediction scores</a></li>
-  </ol>
+- [Table of contents](#table-of-contents)
+- [Abstract](#abstract)
+- [Introduction](#introduction)
+- [How to Run the Code](#how-to-run-the-code)
+- [MODEL AND ALGORITHM](#model-and-algorithm)
+  - [**YOLOv5**](#yolov5)
+  - [**Dataset Preparations**](#dataset-preparations)
+  - [**Predictions Made**](#predictions-made)
+    - [**       PV array detection**](#-pv-array-detection)
+    - [**       Single PV modeule detection**](#-single-pv-modeule-detection)
+    - [**       PV module with fault**](#-pv-module-with-fault)
+  - [**Model Setup Requirements**](#model-setup-requirements)
+  - [**Initialization**](#initialization)
+- [Types of Faults](#types-of-faults)
+  - [Physical Faults](#physical-faults)
+  - [Electrical Faults](#electrical-faults)
+- [Autonomous Drone Navigation](#autonomous-drone-navigation)
+- [Conclusion](#conclusion)
+- [References](#references)
 
 ## Abstract
 
-- Because of the increasing demand of renewable energy, proper management of photovoltaic hubs is important. But fault detection in them is still a challenge. The main temperature consequenced faults can be detected using Thermal analysis of PV modules. In this paper we used **YOLOv5 (YOU LOOK ONLY ONCE version 5)** for detections, which is a novel state of art convolutional neural network (CNN) that detects objects in real-time with great accuracy. This approach uses a single neural network to process the entire picture, then separates it into parts and predicts bounding boxes and probabilities for each component. Using YOLOv5 we detected:
+- Because of the increasing demand for renewable energy, proper management of photovoltaic hubs is important. But fault detection in them is still a challenge. The main temperature consequenced faults can be detected using Thermal analysis of PV modules. In this paper, we used **YOLOv5 (YOU LOOK ONLY ONCE version 5)** for detections, which is a novel state-of-the-art convolutional neural network (CNN) that detects objects in real time with great accuracy. This approach uses a single neural network to process the entire picture, then separates it into parts and predicts bounding boxes and probabilities for each component. Using YOLOv5 we detected:
 <br>
 
   - **Photovoltaic array module**
@@ -73,7 +65,7 @@
 <br>
 <p>.....................</p>
 
-- This model will be used in the UAV quadcopter for the detection of faults on our campus. It will be uploaded using Ardu-mission planner in the Pixhawk and jetson-nano will be used as a companion computer.
+- This model will be used in the UAV quadcopter for the detection of faults on our campus. It will be uploaded using the Ardu-mission planner in the Pixhawk and jetson-nano will be used as a companion computer.
 
 ## Introduction
 
@@ -81,7 +73,7 @@
 
 <p align="justify">So automated fault and error detections in solar plants are today among the most active subjects of research. In this paper, we have used YOLOv5 deep learning network for the detection of solar panels and faults in thermal images of solar farms.</p>
 
-<p align="justify">Since it is known that photovoltaic modules consist of PV cell circuits sealed in an environmentally protective laminate and are the fundamental building blocks of PV systems. Photovoltaic panels include one or more PV modules assembled as a pre-wired, field-installable unit. A photovoltaic array is the complete power-generating unit, consisting of any number of PV modules and panels. Irradiance and temperature are some of the factors that decide the efficiency of PV modules and hence can be used as parameters for fault detection in PV arrays. Irradiance is defined as the measure of the power density of sunlight received and is measured in watts per meter square. With the increasing solar irradiance, both the open-circuit voltage and the short-circuit current increase and hence the maximum power point varies. Temperature plays another major factor. As the temperature increases, the rate of photon generation increases thus reverse saturation current increases rapidly and this reduces the band gap. Hence this leads to marginal changes in current but major changes in voltage. Temperature acts as a negative factor affecting solar cell performance. Hence Temperature difference is used by us as the main parameter for the detection of faults, because defects and faults in PV modules and arrays almost always generate some temperature difference on the laminated semiconductor panel screen.</p>
+<p align="justify">Since it is known that photovoltaic modules consist of PV cell circuits sealed in an environmentally protective laminate and are the fundamental building blocks of PV systems. Photovoltaic panels include one or more PV modules assembled as a pre-wired, field-installable unit. A photovoltaic array is the complete power-generating unit, consisting of any number of PV modules and panels. Irradiance and temperature are some of the factors that decide the efficiency of PV modules and hence can be used as parameters for fault detection in PV arrays. Irradiance is defined as the measure of the power density of sunlight received and is measured in watts per meter square. With the increasing solar irradiance, both the open-circuit voltage and the short-circuit current increase and hence the maximum power point varies. Temperature plays another major factor. As the temperature increases, the rate of photon generation increases thus reverse saturation current increases rapidly and this reduces the band gap. Hence this leads to marginal changes in current but major changes in voltage. Temperature acts as a negative factor affecting solar cell performance. Hence Temperature difference is used by us as the main parameter for the detection of faults because defects and faults in PV modules and arrays almost always generate some temperature difference on the laminated semiconductor panel screen.</p>
 <p align="center">
   <img src="./assets/graphy.png" alt="Graph">
   <p align="center">
@@ -103,8 +95,8 @@ This temperature variation when taken as an RGB 3-dim arrayed image matrix throu
 
 1. Clone the repository to your local machine.
 2. Open the command prompt or terminal with your specific Python environment and type **pip install requirement.txt**.
-3. Now place the test thermal image to the `test_folder` folder.
-4. Run the `app.py` file with your python interpretor.
+3. Now place the test thermal image in the `test_folder` folder.
+4. Run the `app.py` file with your Python interpreter.
 5. View the results on the browser at `http://127.0.0.1:7860`
 
 ## MODEL AND ALGORITHM
@@ -112,7 +104,7 @@ This temperature variation when taken as an RGB 3-dim arrayed image matrix throu
 ### **<ins>YOLOv5</ins>**
 
 <div>
-  <img src="./assets/yoLo.jpg" alt="YOLOv5 Architecture" align="right" width="150">
+  <img src="./assets/YOLO.jpg" alt="YOLOv5 Architecture" align="right" width="150">
 </div>
 
 YOLO an acronym for 'You only look once', is an object detection algorithm that divides images into a grid system. Each cell in the grid is responsible for detecting objects within itself.
@@ -122,10 +114,10 @@ Today YOLO is one of the most famous object detection algorithms due to its spee
 
 Its architecture mainly consisted of three parts, namely:
 
-1. Backbone: Model Backbone is mostly used to extract key features from an input image. CSP(Cross Stage Partial Networks) are used as a backbone in YOLO v5 to extract rich in useful characteristics from an input image.
+1. Backbone: The model Backbone is mostly used to extract key features from an input image. CSP(Cross Stage Partial Networks) are used as a backbone in YOLO v5 to extract rich in useful characteristics from an input image.
 2. Neck: The Model Neck is mostly used to create feature pyramids. Feature pyramids aid models in generalizing successfully when it comes to object scaling. It aids in the identification of the same object in various sizes and scales.
    Feature pyramids are quite beneficial in assisting models to perform effectively on previously unseen data. Other models, such as FPN, BiFPN, and PANet, use various sorts of feature pyramid approaches.
-PANet is used as a neck in YOLO v5 to get feature pyramids.
+PANet is used as a neck in YOLO v5 to feature pyramids.
 3. Head: The model Head is mostly responsible for the final detection step. It uses anchor boxes to construct final output vectors with class probabilities, objectness scores, and bounding boxes.
 
 <p align="center">
@@ -136,9 +128,9 @@ PANet is used as a neck in YOLO v5 to get feature pyramids.
   <br>
 </p>
 
-- YOLOv5 is specifically prefered above other YOLO version because YOLOv5 is about 88% smaller than YOLOv4 (27 MB vs 244 MB), It is about 180% faster than YOLOv4 (140 FPS vs 50 FPS) and is roughly as accurate as YOLOv4 on the same task (0.895 mAP vs 0.892 mAP).
+- YOLOv5 is specifically preferred above other YOLO versions because YOLOv5 is about 88% smaller than YOLOv4 (27 MB vs 244 MB), It is about 180% faster than YOLOv4 (140 FPS vs 50 FPS) and is roughly as accurate as YOLOv4 on the same task (0.895 mAP vs 0.892 mAP).
 - It was released shortly after the release of YOLOv4 by Glenn Jocher using the Pytorch framework on 18 May 2020
-- Also YOLOv5 is also preferred over other detection models like R-CNN,Fast-RCNN and Faster-RCNN even though YOLO and Faster RCNN both share many similarities. They both uses a anchor box based network structure, both uses bounding both regression. Things that differs YOLO from Faster RCNN is that it makes classification and bounding box regression at the same time. Judging from the year they were published, it make sense that YOLO wanted a more elegant way to do regression and classification. YOLO however does have it’s drawback in object detection. YOLO has difficulty detecting objects that are small and close to each other due to only two anchor boxes in a grid predicting only one class of object. It doesn’t generalize well when objects in the image show rare aspects of ratio. Faster RCNN on the other hand, do detect small objects well since it has nine anchors in a single grid, however it fails to do real-time detection with its two step architecture.
+- Also, YOLOv5 is preferred over other detection models like R-CNN, Fast-RCNN and Faster-RCNN even though YOLO and Faster RCNN both share many similarities. They both use an anchor box-based network structure, both use bounding regressions. Things that differentiate YOLO from Faster RCNN is that it makes the classification and bounding box regression at the same time. Judging from the year they were published, it makes sense that YOLO wanted a more elegant way to do regression and classification. YOLO however does have its drawbacks in object detection. YOLO has difficulty detecting objects that are small and close to each other due to only two anchor boxes in a grid predicting only one class of object. It doesn’t generalize well when objects in the image show rare aspects of ratio. Faster RCNN on the other hand, does detect small objects well since it has nine anchors in a single grid, however, it fails to do real-time detection with its two-step architecture.
 
 <p align="center">
   <img src="./assets/bus.jpg" alt="Bus" align="center" width="380">
@@ -150,9 +142,9 @@ PANet is used as a neck in YOLO v5 to get feature pyramids.
 
 ### **<ins>Dataset Preparations</ins>**
 
-The basic data used for this project is **Photovoltaic thermal image dataset which was given to us by Robotics and Artificial Intelligence Department of Information Engineering Università Politecnica Delle Marche**. For its collection, a thermographic inspection of a ground-based PV system was carried out on a PV plant with a power of approximately 66 MW in Tombourke, South Africa. The thermographic acquisitions were made over seven working days, from 21 to 27 January 2019 with the sky predominantly clear and with maximum irradiation. This situation is optimal to enhance any abnormal behaviour(faults) of entire panels or any specific portion .
+The basic data used for this project is **The photovoltaic thermal image dataset which was given to us by the Robotics and Artificial Intelligence Department of Information Engineering Università Politecnica Delle Marche**. For its collection, a thermographic inspection of a ground-based PV system was carried out on a PV plant with a power of approximately 66 MW in Tombourke, South Africa. The thermographic acquisitions were made over seven working days, from 21 to 27 January 2019 with the sky predominantly clear and with maximum irradiation. This situation is optimal for enhancing any abnormal behavior(faults) of entire panels or any specific portion.
 
-Dataset contains **3 folders** each containing **1009 images**. **1st folder** stores **pre-processed thermal images** taken by UAV copter, the **2nd folder** contains the **equivalent grayscale** images of the same thermal image taken through copter, while **3rd folder** contains **masked image** showing the separated single defected cells or contiguous sequence of faulty cells (string). Each folder contains images of size **512 X 640 pixels**.
+The dataset contains **3 folders** each containing **1009 images**. **1st folder** stores **pre-processed thermal images** taken by the UAV copter, the **2nd folder** contains the **equivalent grayscale** images of the same thermal image taken through the copter, while **3rd folder** contains **masked images** showing the separated single defected cells or a contiguous sequence of faulty cells (string). Each folder contains images of size **512 X 640 pixels**.
 <div align="center">
   <img src="./assets/imgFC61.png" alt="Drone" align="left" width="230">
   <img src="./assets/mask61.png" alt="Drone" align="right" width="230">
@@ -166,18 +158,18 @@ Dataset contains **3 folders** each containing **1009 images**. **1st folder** s
   <img src="./assets/img59.png" alt="Drone" align="center" width="230">
 </div>
 <br><br>
-This data is modified in three different forms so as to obtain three different detection models for PV array, module and fault respectively. For YOLO to work we need bounding boxes around the object of consideration. YOLO need image along with the text file containing the coordinates of the bounding rectangle around the object of consideration.
-We made bounding boxes around the faulty cells and strings using the masked images provided to us. But for PV array and single cell detection we made bounding boxes using app.roboflow.com .
+This data is modified in three different forms to obtain three different detection models for PV array, module and fault respectively. For YOLO to work we need bounding boxes around the object of consideration. YOLO needs images along with the text file containing the coordinates of the bounding rectangle around the object of consideration.
+We made bounding boxes around the faulty cells and strings using the masked images provided to us. But for PV array and single cell detection, we made bounding boxes using app.roboflow.com.
 <br>
 <div align="center">
   <img src="./assets/roboflow2.jpeg" alt="Drone" align="center" width="430">
 </div>
 <br>
 
-For PV array we made on an average 4 bounding boxes per image for about 200 images. And on an average 30 bounding boxes per image for 72 images for single PV cell detection.
+For the PV array, we made on average 4 bounding boxes per image for about 200 images. And on average 30 bounding boxes per image for 72 images for single PV cell detection.
 
-1. In depth specifications of the drone are [here](https://www.cyberbotics.com/doc/guide/mavic-2-pro?version=develop#mavic2pro-field-summary).
-2. To know more about the sensors used in the drone, click [here](https://github.com/cyberbotics/webots/tree/released/docs/reference)
+1. In-depth specifications of the drone are [here](https://www.cyberbotics.com/doc/guide/mavic-2-pro?version=develop#mavic2pro-field-summary).
+2. To learn more about the sensors used in the drone, click [here](https://github.com/cyberbotics/webots/tree/released/docs/reference)
 
 ### **<ins>Predictions Made</ins>**
 
@@ -205,7 +197,7 @@ Predictions are reasonably acceptable. Detections do not have any false positive
 
 #### **&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <ins>PV module with fault</ins>**
 
-- Faulty cell detections are also accurate for single defected cells and contiguous sequences of defective cells (string). The model has accuracy of
+- Faulty cell detections are also accurate for single defected cells and contiguous sequences of defective cells (string). The model has the accuracy of
 
 <br>
 <div align="center">
@@ -227,8 +219,8 @@ Predictions are reasonably acceptable. Detections do not have any false positive
 
 1. Gitclone the repository in your system.
 2. Open the command prompt or terminal with your specific Python environment and type **pip install requirement.txt**.
-3. Now place the test thermal image to the false colour folder.
-4. Open the detect_teen.py file and run it with your python interpretor.
+3. Now place the test thermal image in the false color folder.
+4. Open the detect_teen.py file and run it with your Python interpreter.
 5. Results will be displayed on a screen and will be stored inside the runs folder.
 
 ## Types of Faults
@@ -237,8 +229,8 @@ Predictions are reasonably acceptable. Detections do not have any false positive
 
 - **Soiling Fault:**
   <ul>
-    <li>Detection of Fault due to dirt(because of various reasons) could be done easily as it will be warmer as compared to its surrounding.</li>
-    <li>Could be detect if a local temperture variation is encountered while scanning.</li>
+    <li>Detection of Faults due to dirt(because of various reasons) could be done easily as it will be warmer as compared to its surroundings.</li>
+    <li>Could be detected if a local temperature variation is encountered while scanning.</li>
   </ul>
   <div align="center">
     <img src="./assets/soil.png" alt="Drone" align="center" width="430">
@@ -247,7 +239,7 @@ Predictions are reasonably acceptable. Detections do not have any false positive
 
 - **Diode Fault:**
   <ul>
-    <li>High Resistance or other defects at specific parts of Diode screen of the panel(ex: bending etc)</li>
+    <li>High Resistance or other defects at specific parts of the Diode screen of the panel(ex: bending etc)</li>
     <li>Can be detected if different spots of temperature variation are encountered within a single module</li>
   </ul>
   <div align="center">
@@ -275,42 +267,42 @@ Predictions are reasonably acceptable. Detections do not have any false positive
 <br>
 
 <ul>
-  <li>These above electrical faults moslty effect the whole PV array/string, hence the faults cooming in whole PV array can be considered as any of the electrical fault </li>
-  <li>These errors can be confirmend from the parameters we can obtain throgh the inverter like string currents,Rate of change of string current, Dimensionally reducted data(PCA) of various parameters etc.
+  <li>These above electrical faults mostly affect the whole PV array/string, hence the faults coming in the whole PV array can be considered as any of the electrical faults.</li>
+  <li>These errors can be confirmed from the parameters we can obtain through the inverter like string currents, rate of change of string current, dimensionally reduced data(PCA) of various parameters etc.
   </li>
-  <li>Hence our further future works will based on the electrical fault detection using inverter parameters and ML models classifiers like SVM, k-nearest neigbour, random forest etc. And model with highest accuracy will be finalised.</li>
+  <li>Hence our future works will based on electrical fault detection using inverter parameters and ML model classifiers like SVM, k-nearest neighbor, random forest etc. The model with the highest accuracy will be finalized.</li>
 </ul>
 
 ## Autonomous Drone Navigation
 
-- For making UAV quadcopter fully autonomous and capable of taking images on its own, we have simulated scripts in ROS(noetic and ubuntu 20.0) and Gazebo(version-10).
-- Drone URDF and plugins were made to test drone on simulation.
+- To make the UAV quadcopter fully autonomous and capable of taking images on its own, we have simulated scripts in ROS(noetic and ubuntu 20.0) and Gazebo(version-10).
+- Drone URDF and plugins were made to test the drone on simulation.
   <br>
     <div align="center">
     <img src="./assets/droni1.png" alt="Drone" align="center" width="400"></div>
   <br>
-- Navigation packages from ROS Navigation stack are added to Drone controller.Also Fine tuning mapping and navigating parameters is done for best results.
-- Obstacle avoidance and path planning packages are also added to drone.
+- Navigation packages from the ROS Navigation stack are added to the Drone controller. Also, Fine-tuning mapping and navigating parameters is done for best results.
+- Obstacle avoidance and path planning packages are also added to the drone.
   <div align="center">
     <img src="./assets/slam1.jpg" alt="Drone" align="left" width="200">
     <img src="./assets/slam2.jpg" alt="Drone" align="right" width="200">
     <img src="./assets/slam3.jpg" alt="Drone" align="center" width="200">
   </div>
   <br>
-- However due to lack of thermal camera plugin in gazebo, complete testing on simulation of drone was done.
+- However, due to the lack of a thermal camera plugin in the gazebo, complete testing on the simulation of drone was done.
   <div align="center">
     <img src="./assets/droni2.png" alt="Drone" align="center" width="400">
   </div>
 
-# Conclusion
+## Conclusion
 
-In this paper, YOLOv5, a novel deep learning model is used  for detecting faults in large-scale PV farms and plants. To achieve great results, improved Photovoltaic thermal image dataset was used along with proper hypertuned model. Proper detections are shown while code runs and results are properly saved.
+In this paper, YOLOv5, a novel deep-learning model is used for detecting faults in large-scale PV farms and plants. To achieve great results, an improved Photovoltaic thermal image dataset was used along with a properly hypertuned model. Proper detections are shown while code runs and results are properly saved.
 
-Proposed model(in future) is to be deployed in jetson which will be used as a companion computer in our UAV Copter. Copter design is almost complete in simuation(except thermal camera).
+The proposed model(in the future) is to be deployed in Jetson which will be used as a companion computer in our UAV Copter. Copter design is almost complete in simulation(except for the thermal camera).
 
-Demo video can be seen from [HERE](https://dare2compete.com/o/b61Yrn2?lb=JqIDm9e)
+Demo video can be seen from [HERE](https://docs.phillweston.com)
 
-# References
+## References
 
 - [Fault detection, classification and protection in solar photovoltaic arrays](https://repository.library.northeastern.edu/files/neu:rx917d168/fulltext.pdf)
 
