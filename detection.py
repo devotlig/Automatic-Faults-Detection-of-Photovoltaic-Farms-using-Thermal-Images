@@ -472,8 +472,19 @@ def parse_opt():
     print_args(vars(opt))
     return opt
 
+def check_cuda_availability():
+    print('--------------------------------------------------------------------------------')
+    if torch.cuda.is_available():
+        print("CUDA is available. You can use GPU for computation.")
+        print(f"Number of available GPUs: {torch.cuda.device_count()}")
+        for i in range(torch.cuda.device_count()):
+            print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+    else:
+        print("CUDA is not available. Using CPU for computation.")
+    print('--------------------------------------------------------------------------------')
 
 def main(opt):
+    check_cuda_availability()
     check_requirements(exclude=('tensorboard', 'thop'))
     run(**vars(opt))
 
